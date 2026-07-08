@@ -1,0 +1,193 @@
+<view class="page">
+  <block wx:if="{{loading}}">
+    <view class="loading-wrap">
+      <view class="loading-spinner"></view>
+      <text>加载中...</text>
+    </view>
+  </block>
+
+  <block wx:elif="{{task}}">
+
+    <!-- ==================== 1. 任务概览卡片 ==================== -->
+    <view class="overview-card {{task.status}} {{isOverdue ? 'overdue-card' : ''}}">
+      <view class="oc-status-row">
+        <view class="oc-status-badge {{task.status}} {{isOverdue ? 'overdue' : ''}}">
+          <text wx:if="{{isOverdue}}">⚠️ 已逾期</text>
+          <text wx:elif="{{task.status === 'pending'}}">⏳ 待完成</text>
+          <text wx:elif="{{task.status === 'completed'}}">✅ 已完成</text>
+          <text wx:else>{{task.status}}</text>
+        </view>
+      </view>
+
+      <text class="oc-title">{{task.title}}</text>
+      <text class="oc-desc" wx:if="{{task.description}}">{{task.description}}</text>
+
+      <!-- 角度可视化条 -->
+      <view class="angle-viz">
+        <view class="av-track">
+          <view class="av-target-zone"
+            style="left: {{task.targetAngleMin / 180 * 100}}%; width: {{(task.targetAngleMax - task.targetAngleMin) / 180 * 100}}%;">
+          </view>
+          <!-- 训练中显示实时角度位置 -->
+          <view wx:if="{{training}}" class="av-current-dot {{inTargetZone ? 'in-zone' : ''}}"
+            style="left: {{currentAngle / 180 * 100}}%;">
+          </view>
+        </view>
+        <view class="av-labels">
+          <text>0°</text>
+          <text>90°</text>
+          <text>180°</text>
+        </view>
+      </view>
+
+      <!-- 三列数据 -->
+      <view class="oc-data-row">
+        <view class="oc-data-item">
+          <text class="oc-data-val highlight">{{task.targetAngleMin}}° - {{task.targetAngleMax}}°</text>
+          <text class="oc-data-lbl">目标角度</text>
+        </view>
+        <view class="oc-data-item">
+          <text class="oc-data-val">{{task.repetitions}} 次</text>
+          <text class="oc-data-lbl">重复次数</text>
+        </view>
+        <view class="oc-data-item">
+          <text class="oc-data-val {{isOverdue ? 'overdue-text' : ''}}">{{deadlineText}}</text>
+          <text class="oc-data-lbl">截止时间</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- ==================== 2. 训练进度区（仅待完成任务） ==================== -->
+    <view wx:if="{{task.status === 'pending'}}" class="training-section">
+
+      <!-- 未开始训练：引导卡片 -->
+      <view wx:if="{{!training}}" class="training-start-card">
+        <view class="tsc-icon">🏋️</view>
+        <text class="tsc-title">准备开始训练</text>
+        <text class="tsc-hint">点击下方按钮，系统将自动追踪您的肘关节角度并计数</text>
+        <view class="tsc-guide">
+          <view class="tsc-guide-item">
+            <text class="tsc-guide-num">1</text>
+            <text>佩戴好设备，面向摄像头</text>
+          </view>
+          <view class="tsc-guide-item">
+            <text class="tsc-guide-num">2</text>
+            <text>手臂从弯曲→伸直→弯曲 = 1次</text>
+          </view>
+          <view class="tsc-guide-item">
+            <text class="tsc-guide-num">3</text>
+            <text>角度进入绿色区间自动计数</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 训练中：实时数据面板 -->
+      <view wx:else class="training-panel">
+        <!-- 实时角度仪表盘 -->
+        <view class="tp-angle-display {{inTargetZone ? 'in-zone-glow' : ''}}">
+          <view class="tp-angle-ring">
+            <text class="tp-angle-num {{inTargetZone ? 'in-zone-text' : ''}}">{{currentAngle}}°</text>
+            <text class="tp-angle-label">实时肘关节角度</text>
+          </view>
+          <view class="tp-angle-status">
+            <text wx:if="{{inTargetZone}}" class="tp-status-good">✓ 目标区间内</text>
+            <text wx:elif="{{currentAngle < task.targetAngleMin}}" class="tp-status-low">↑ 请加大伸展</text>
+            <text wx:else class="tp-status-high">↓ 请减小伸展</text>
+          </view>
+        </view>
+
+        <!-- 实时数据行 -->
+        <view class="tp-vitals-row">
+          <view class="tp-vital-item">
+            <text class="tp-vital-val heart-color">{{trainingBpm}}</text>
+            <text class="tp-vital-lbl">心率 BPM</text>
+          </view>
+          <view class="tp-vital-item">
+            <text class="tp-vital-val">{{trainingEmg}}</text>
+            <text class="tp-vital-lbl">肌电 μV</text>
+          </view>
+          <view class="tp-vital-item">
+            <view class="tp-emg-bar-wrap">
+              <view class="tp-emg-bar-inner" style="height: {{emgPercent}}%;"></view>
+            </view>
+            <text class="tp-vital-lbl">肌肉激活</text>
+          </view>
+        </view>
+
+        <!-- 次数计数器 -->
+        <view class="tp-rep-counter">
+          <text class="tp-rep-label">完成次数</text>
+          <view class="tp-rep-display">
+            <text class="tp-rep-done">{{currentRep}}</text>
+            <text class="tp-rep-sep">/</text>
+            <text class="tp-rep-total">{{task.repetitions}}</text>
+          </view>
+          <!-- 进度条 -->
+          <view class="tp-rep-progress">
+            <view class="tp-rep-fill" style="width: {{currentRep / task.repetitions * 100}}%;"></view>
+          </view>
+        </view>
+
+        <!-- 跳转数字孪生 + 停止训练按钮 -->
+        <button class="goto-twin-btn" bindtap="gotoDigitalTwin">🧬 查看数字孪生</button>
+        <button class="stop-train-btn" bindtap="stopTraining">⏹ 停止训练</button>
+      </view>
+
+      <!-- 完成数据（已完成时显示） -->
+      <view wx:if="{{task.status === 'completed' && task.completedData}}" class="info-card completed-card">
+        <view class="info-title">📊 完成数据</view>
+        <view class="info-row">
+          <text class="info-label">最高肌电</text>
+          <text class="info-value">{{task.completedData.maxEmg}} μV</text>
+        </view>
+        <view class="info-row">
+          <text class="info-label">平均角度</text>
+          <text class="info-value">{{task.completedData.avgAngle}}°</text>
+        </view>
+        <view class="info-row">
+          <text class="info-label">心率</text>
+          <text class="info-value">{{task.completedData.bpm}} BPM</text>
+        </view>
+        <view class="info-row">
+          <text class="info-label">完成时间</text>
+          <text class="info-value">{{task.completedAt}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- ==================== 3. 操作区 ==================== -->
+    <view class="action-area">
+      <!-- 患者：待完成任务 -->
+      <block wx:if="{{role === 'patient' && task.status === 'pending'}}">
+        <button wx:if="{{!training}}" class="action-btn twin-train-btn" bindtap="startTraining">
+          🧬 3D 数字孪生训练
+        </button>
+        <button wx:if="{{!training}}" class="action-btn quick-train-btn" bindtap="startQuickTraining">
+          📊 快速训练（仅数字）
+        </button>
+        <button wx:if="{{!training}}" class="action-btn complete-btn" bindtap="completeTask" loading="{{completing}}">
+          ✓ 标记完成
+        </button>
+      </block>
+
+      <!-- 患者：已完成 -->
+      <view wx:elif="{{role === 'patient' && task.status === 'completed'}}" class="done-msg">
+        🎉 您已完成此训练任务，继续保持！
+      </view>
+
+      <!-- 医生 -->
+      <block wx:if="{{role === 'doctor'}}">
+        <button class="action-btn danger-btn" bindtap="deleteTask">🗑 删除此任务</button>
+      </block>
+    </view>
+
+  </block>
+
+  <block wx:else>
+    <view class="empty-wrap">
+      <text class="empty-icon-large">📋</text>
+      <text class="empty-text">任务不存在或已删除</text>
+      <button class="empty-back-btn" bindtap="goBack">返回</button>
+    </view>
+  </block>
+</view>

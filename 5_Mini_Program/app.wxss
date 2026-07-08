@@ -1,0 +1,71 @@
+/** app.wxss — Global Styles **/
+
+/* Page defaults */
+page {
+  --primary: #0984e3;
+  --primary-light: #e3f2fd;
+  --success: #2ecc71;
+  --success-light: #e8f5e9;
+  --warning: #f39c12;
+  --warning-light: #fff8e1;
+  --danger: #e74c3c;
+  --danger-light: #ffebee;
+  --bg: #f5f7fa;
+  --card-bg: #ffffff;
+  --card-radius: 18px;
+  --card-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  --text: #1a1a2e;
+  --text-secondary: #636e72;
+  --text-muted: #95a5a6;
+  --border: #f1f2f6;
+
+  background-color: var(--bg);
+  font-family: -apple-system, "Helvetica Neue", "PingFang SC", sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+/* Container */
+.container {
+  padding: 16px;
+  padding-bottom: 50px;
+  box-sizing: border-box;
+}
+
+/* Standard card */
+.card {
+  background: var(--card-bg);
+  border-radius: var(--card-radius);
+  padding: 18px;
+  margin-bottom: 14px;
+  box-shadow: var(--card-shadow);
+}
+
+/* Buttons */
+.btn {
+  display: block;
+  width: 100%;
+  height: 48px;
+  line-height: 48px;
+  border-radius: 24px;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  border: none;
+  transition: all 0.2s;
+}
+
+.btn:active { opacity: 0.85; transform: scale(0.98); }
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), #00a8ff);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(9,132,227,0.25);
+}
+
+.btn-outline {
+  background: var(--card-bg);
+  color: var(--primary);
+  border: 1px solid #dfe6e9;
+}

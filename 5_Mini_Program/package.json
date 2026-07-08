@@ -1,0 +1,11 @@
+{
+  "name": "smart-sleeve",
+  "version": "1.1.0",
+  "description": "智能健康袖套 - 微信小程序",
+  "main": "app.js",
+  "dependencies": {
+    "threejs-miniprogram": "^0.0.8",
+    "pako": "^2.1.0"
+  },
+  "license": "UNLICENSED"
+}

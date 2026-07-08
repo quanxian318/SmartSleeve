@@ -1,0 +1,711 @@
+/* ==================== History Page ==================== */
+
+/* 1. Container */
+.container {
+  background-color: #f6f8fa;
+  min-height: 100vh;
+  padding: 16px 16px 40px;
+}
+
+/* ==================== 2. User Card ==================== */
+.user-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 2px 14px rgba(0,0,0,0.04);
+  margin-bottom: 16px;
+}
+
+.avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: #e3f2fd;
+  border: 3px solid #e3f2fd;
+  flex-shrink: 0;
+}
+
+.name-section {
+  flex: 1;
+  min-width: 0;
+}
+
+.nickname {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a2e;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.edit-btn {
+  background: #f1f2f6;
+  color: #747d8c;
+  border-radius: 20px;
+  font-size: 12px;
+  padding: 4px 14px;
+  line-height: 1.6;
+  border: none;
+}
+
+.name-input {
+  width: 100%;
+  height: 36px;
+  border: 1px solid #dfe6e9;
+  border-radius: 8px;
+  padding: 0 10px;
+  font-size: 15px;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.role-badge {
+  padding: 5px 14px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.badge-doctor {
+  background: #e3f2fd;
+  color: #0984e3;
+}
+
+.badge-patient {
+  background: #e8f5e9;
+  color: #2ecc71;
+}
+
+/* ==================== 3. Profile Card ==================== */
+.profile-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 18px 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+}
+
+.profile-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.profile-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.profile-data-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.profile-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  padding: 4px 0;
+}
+
+.profile-label {
+  font-size: 11px;
+  color: #95a5a6;
+  margin-bottom: 6px;
+}
+
+.profile-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.bmi-highlight {
+  background: #e3f2fd;
+  border-radius: 12px;
+  padding: 8px 0;
+}
+
+.bmi-num {
+  color: #0984e3;
+  font-size: 18px;
+}
+
+/* Profile edit form */
+.profile-edit-form {
+  padding-top: 4px;
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.form-label {
+  width: 48px;
+  font-size: 14px;
+  color: #2c3e50;
+  flex-shrink: 0;
+}
+
+.form-input {
+  flex: 1;
+  height: 36px;
+  border: 1px solid #dfe6e9;
+  border-radius: 8px;
+  padding: 0 12px;
+  font-size: 14px;
+  text-align: right;
+}
+
+.form-unit {
+  width: 28px;
+  font-size: 12px;
+  color: #95a5a6;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.gender-toggle {
+  display: flex;
+  flex: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #dfe6e9;
+}
+
+.gender-option {
+  flex: 1;
+  text-align: center;
+  padding: 8px 0;
+  font-size: 14px;
+  color: #636e72;
+  background: #f8f9fa;
+  transition: all 0.2s;
+}
+
+.gender-option.active {
+  background: #0984e3;
+  color: #fff;
+}
+
+.bmi-preview {
+  background: #f1f2f6;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.bmi-calc {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0984e3;
+  flex: 1;
+  text-align: right;
+}
+
+/* ==================== 4. AI Section ==================== */
+.ai-section {
+  margin-bottom: 16px;
+}
+
+.ai-card {
+  background: linear-gradient(135deg, #0984e3, #00a8ff);
+  border-radius: 18px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 6px 20px rgba(9, 132, 227, 0.2);
+}
+
+.ai-card:active {
+  transform: scale(0.98);
+}
+
+.ai-icon-box {
+  width: 48px;
+  height: 48px;
+  background: rgba(255,255,255,0.18);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  margin-right: 14px;
+  flex-shrink: 0;
+}
+
+.ai-info {
+  flex: 1;
+}
+
+.ai-card-title {
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.ai-card-desc {
+  color: rgba(255,255,255,0.75);
+  font-size: 12px;
+}
+
+.ai-arrow-btn {
+  background: rgba(255,255,255,0.95);
+  color: #0984e3;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 16px;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+/* ==================== 5. Doctor/Pin ==================== */
+.invite-card {
+  background: linear-gradient(135deg, #0984e3, #0c6ac7);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 16px;
+  color: #fff;
+}
+
+.invite-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.invite-card-title {
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+.refresh-code-btn {
+  background: rgba(255,255,255,0.18) !important;
+  color: #fff !important;
+  border-radius: 14px !important;
+  font-size: 11px;
+  border: none !important;
+}
+
+.invite-code-display {
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: 6px;
+  text-align: center;
+  font-family: 'Courier New', monospace;
+  padding: 14px 0;
+}
+
+.invite-card-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.invite-action-btn {
+  flex: 1;
+  height: 38px;
+  line-height: 38px;
+  font-size: 13px;
+  border-radius: 19px;
+  border: none;
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+  font-weight: 600;
+}
+
+.stats-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  flex: 1;
+  background: #fff;
+  border-radius: 16px;
+  padding: 18px;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+}
+
+.stat-num {
+  font-size: 30px;
+  font-weight: 800;
+  color: #1a1a2e;
+  display: block;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #95a5a6;
+  display: block;
+  margin-top: 4px;
+}
+
+/* ==================== 6. Patient: Doctor Connect ==================== */
+.doctor-connect-card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+}
+
+.dc-bound {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.dc-icon {
+  font-size: 36px;
+}
+
+.dc-info {
+  flex: 1;
+}
+
+.dc-label {
+  font-size: 12px;
+  color: #95a5a6;
+  display: block;
+}
+
+.dc-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.dc-unbound {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dc-hint {
+  font-size: 14px;
+  color: #95a5a6;
+}
+
+.dc-bind-btn {
+  background: #0984e3 !important;
+  color: #fff !important;
+  border-radius: 16px !important;
+  font-size: 13px;
+  border: none !important;
+}
+
+.bind-input-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.bind-code-input {
+  flex: 1;
+  height: 40px;
+  border: 1px solid #dfe6e9;
+  border-radius: 10px;
+  padding: 0 12px;
+  font-size: 18px;
+  letter-spacing: 4px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.bind-confirm-btn {
+  background: #0984e3 !important;
+  color: #fff !important;
+  border-radius: 10px !important;
+  font-size: 13px;
+  border: none !important;
+}
+
+/* ==================== 7. Patient Tasks Entry ==================== */
+.my-tasks-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  padding: 16px 18px;
+  border-radius: 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+  transition: background 0.15s;
+}
+
+.my-tasks-entry:active {
+  background: #f0f4f8;
+}
+
+.mte-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mte-icon {
+  font-size: 26px;
+}
+
+.mte-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.mte-arrow {
+  font-size: 26px;
+  color: #c8ccd4;
+}
+
+/* ==================== 8. Record List ==================== */
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0 4px 12px;
+}
+
+.title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.subtitle {
+  font-size: 12px;
+  color: #95a5a6;
+  background: #f1f2f6;
+  padding: 2px 10px;
+  border-radius: 10px;
+}
+
+.record-list {
+  max-height: 500px;
+}
+
+.record-item {
+  display: flex;
+  background: #fff;
+  margin-bottom: 10px;
+  padding: 16px;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+.record-item:last-child {
+  margin-bottom: 0;
+}
+
+.item-left {
+  flex: 1;
+}
+
+.mode-tag {
+  display: inline-block;
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.tag-sport { background: #fff2e6; color: #ff9f43; }
+.tag-rehab { background: #e3f2fd; color: #00a8ff; }
+
+.date-text {
+  font-size: 12px;
+  color: #95a5a6;
+  margin-left: 8px;
+}
+
+.data-grid {
+  display: flex;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.data-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.data-cell .l {
+  font-size: 10px;
+  color: #95a5a6;
+  margin-bottom: 2px;
+}
+
+.data-cell .v {
+  font-size: 17px;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+/* Posture snapshot (mini arm visualization) */
+.posture-snapshot {
+  width: 72px;
+  height: 72px;
+  background: #f0f4f8;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.arm-base {
+  width: 4px;
+  height: 4px;
+  background: #333;
+  border-radius: 50%;
+  position: relative;
+}
+
+.bone {
+  position: absolute;
+  width: 4px;
+  background: #00a8ff;
+  border-radius: 4px;
+  transform-origin: top center;
+}
+
+.upper-arm { height: 22px; }
+.lower-arm {
+  height: 18px;
+  top: 22px;
+  background: #00cec9;
+}
+
+.joint {
+  width: 6px;
+  height: 6px;
+  background: #ff7675;
+  border-radius: 50%;
+  position: absolute;
+  top: 19px;
+  left: -1px;
+}
+
+.snapshot-label {
+  font-size: 9px;
+  color: #95a5a6;
+  margin-top: 44px;
+}
+
+/* ==================== 9. Empty States ==================== */
+.empty-state {
+  text-align: center;
+  padding: 50px 20px;
+}
+
+.empty-state icon {
+  margin-bottom: 12px;
+}
+
+.empty-state text {
+  font-size: 14px;
+  color: #bdc3c7;
+  display: block;
+}
+
+/* ==================== 10. AI Modal ==================== */
+.ai-modal-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.25s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.ai-modal-content {
+  width: 86%;
+  background: #fff;
+  border-radius: 22px;
+  padding: 0;
+  max-height: 72vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(40px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.ai-modal-header {
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  padding: 22px 20px;
+  border-bottom: 1px solid #f1f2f6;
+  color: #0984e3;
+}
+
+.ai-modal-body {
+  padding: 20px;
+  font-size: 14px;
+  color: #444;
+  line-height: 1.8;
+  flex: 1;
+}
+
+.diagnosis-tag {
+  display: inline-block;
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 10px;
+  background: #e3f2fd;
+  color: #0984e3;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.ai-result-text {
+  white-space: pre-line;
+  display: block;
+}
+
+.ai-modal-btn {
+  margin: 0 20px 20px;
+  height: 46px;
+  line-height: 46px;
+  border-radius: 23px;
+  background: linear-gradient(135deg, #0984e3, #00a8ff) !important;
+  color: #fff !important;
+  font-weight: 700;
+  font-size: 15px;
+  border: none !important;
+}

@@ -1,0 +1,44 @@
+.page { min-height: 100vh; background: #f6f8fa; padding: 16px; }
+
+.ar-header { text-align: center; padding: 20px 0 10px; }
+.ar-title { font-size: 22px; font-weight: 700; color: #1a1a2e; display: block; }
+.ar-sub { font-size: 13px; color: #95a5a6; margin-top: 6px; }
+
+.ar-section { margin-bottom: 20px; }
+.ar-section-title { font-size: 15px; font-weight: 700; color: #2c3e50; display: block; margin-bottom: 12px; }
+
+/* Action grid */
+.ar-action-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+.ar-action-card { position: relative; width: calc(50% - 5px); background: #fff; border-radius: 16px; padding: 16px 14px; border: 2px solid transparent; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+.ar-action-card.selected { border-color: #0984e3; background: #f0f7ff; }
+.ar-action-icon { font-size: 28px; display: block; margin-bottom: 6px; }
+.ar-action-name { font-size: 15px; font-weight: 700; color: #2c3e50; display: block; }
+.ar-action-desc { font-size: 11px; color: #95a5a6; display: block; margin-top: 2px; }
+.ar-check { position: absolute; top: 10px; right: 12px; width: 22px; height: 22px; border-radius: 50%; background: #0984e3; color: #fff; font-size: 13px; display: flex; align-items: center; justify-content: center; }
+
+.ar-custom-name { margin-top: 12px; }
+.ar-name-input { width: 100%; height: 44px; border: 1px solid #dfe6e9; border-radius: 10px; padding: 0 14px; font-size: 15px; box-sizing: border-box; }
+
+/* Recording */
+.ar-recording-panel { text-align: center; background: #fff; border-radius: 20px; padding: 30px 20px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); border: 2px solid #e74c3c; }
+.ar-rec-indicator { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 16px; font-weight: 700; color: #e74c3c; margin-bottom: 20px; }
+.ar-rec-dot { width: 12px; height: 12px; border-radius: 50%; background: #e74c3c; animation: recPulse 0.8s infinite; }
+@keyframes recPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+.ar-rec-data { display: flex; justify-content: space-around; margin-bottom: 20px; }
+.ar-rec-item { text-align: center; }
+.ar-rec-val { font-size: 32px; font-weight: 800; color: #1a1a2e; display: block; }
+.ar-rec-lbl { font-size: 11px; color: #95a5a6; }
+.ar-rec-hint { font-size: 13px; color: #bdc3c7; padding: 12px; background: #f8f9fb; border-radius: 10px; }
+
+/* Result */
+.ar-result-panel { text-align: center; background: #fff; border-radius: 20px; padding: 30px 20px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+.ar-result-icon { font-size: 48px; margin-bottom: 10px; }
+.ar-result-title { font-size: 20px; font-weight: 700; color: #2c3e50; display: block; margin-bottom: 8px; }
+.ar-result-summary { font-size: 14px; color: #636e72; white-space: pre-line; line-height: 1.8; display: block; margin-bottom: 20px; }
+.ar-result-actions { display: flex; flex-direction: column; gap: 10px; }
+.ar-btn-save { background: linear-gradient(135deg, #0984e3, #00a8ff); color: #fff; border-radius: 24px; font-size: 16px; font-weight: 600; box-shadow: 0 4px 14px rgba(9,132,227,0.3); border: none; }
+.ar-btn-retry { background: #f1f2f6; color: #636e72; border-radius: 24px; font-size: 15px; border: none; }
+
+/* Start */
+.ar-start-area { text-align: center; margin-top: 20px; }
+.ar-btn-start { background: linear-gradient(135deg, #e74c3c, #c0392b); color: #fff; border-radius: 26px; font-size: 17px; font-weight: 700; box-shadow: 0 6px 20px rgba(231,76,60,0.3); border: none; }

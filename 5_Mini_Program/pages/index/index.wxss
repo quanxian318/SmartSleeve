@@ -1,0 +1,928 @@
+/* ================= 基础布局 ================= */
+page {
+  background-color: #f6f8fa;
+  font-family: -apple-system, "Helvetica Neue", sans-serif;
+}
+
+.container {
+  padding: 15px;
+  padding-bottom: 50px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ================= 顶部连接区 ================= */
+.header {
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.status-bar {
+  padding: 10px;
+  border-radius: 12px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.offline {
+  background-color: #dcdde1;
+  color: #718093;
+}
+
+.online {
+  background-color: #e4f8ed;
+  color: #20bf6b;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.rdk-connect-box {
+  background: #fff;
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  margin-bottom: 10px;
+}
+
+.rdk-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.rdk-input {
+  flex: 1;
+  height: 38px;
+  border: 1px solid #eaeaea;
+  border-radius: 8px;
+  padding: 0 10px;
+  background: #fff;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.rdk-btn {
+  background: #576574 !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+  padding: 0 12px;
+}
+
+.rdk-status-bar {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #555;
+  text-align: center;
+}
+
+.vision-detail-box {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: #f8f9fb;
+  border-radius: 10px;
+  font-size: 12px;
+  color: #444;
+  line-height: 1.8;
+  text-align: left;
+}
+
+.vision-row {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px dashed #eceff4;
+  padding: 2px 0;
+}
+
+.vision-row:last-child {
+  border-bottom: none;
+}
+
+.rdk-info {
+  font-size: 12px;
+  margin-top: 5px;
+  color: #666;
+}
+
+.btn-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.btn-primary {
+  flex: 2;
+  background: #0984e3;
+  color: white;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+.btn-mock {
+  flex: 1;
+  background: #20bf6b;
+  color: white;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+.btn-reset {
+  flex: 1;
+  background: #e74c3c;
+  color: white;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+/* ================= AI 紧凑状态条 ================= */
+.ai-compact {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  margin-bottom: 14px;
+  background: #f0faf3;
+  border: 1px solid rgba(46,204,113,0.2);
+}
+
+.ai-compact.warn { background: #fffdf0; border-color: rgba(241,196,15,0.3); }
+.ai-compact.danger { background: #fff5f5; border-color: rgba(231,76,60,0.3); animation: shake 0.4s; }
+
+.ai-compact-msg { flex: 1; font-size: 13px; font-weight: 600; color: #2c3e50; }
+.ai-compact-score { font-size: 20px; font-weight: 800; color: #2c3e50; }
+
+/* ================= 两项指标 ================= */
+.vitals-grid { display: flex; gap: 10px; margin-bottom: 14px; }
+.vital-card { flex: 1; background: #fff; border-radius: 16px; padding: 14px 8px 10px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+.vital-wide { flex: 1; padding: 16px 12px 12px; }
+.vital-card.danger { background: #fff5f5; }
+.vital-icon { font-size: 22px; display: block; margin-bottom: 4px; }
+.vital-num { font-size: 24px; font-weight: 700; color: #2c3e50; }
+.vital-unit { font-size: 11px; font-weight: 400; color: #95a5a6; margin-left: 2px; }
+.vital-label { font-size: 11px; color: #95a5a6; display: block; margin-top: 2px; }
+.vital-chart-btn { margin-top: 8px; padding: 5px 12px; font-size: 11px; color: #0984e3; background: #f0f7ff; border-radius: 12px; display: inline-block; font-weight: 500; }
+.vital-chart-btn:active { background: #d6ebff; }
+
+/* ================= 波形图表弹窗 ================= */
+.chart-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.55); z-index: 200; display: flex; align-items: center; justify-content: center; }
+.chart-modal { width: 92%; background: #fff; border-radius: 18px; padding: 16px; }
+.chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.chart-title { font-size: 15px; font-weight: 700; color: #2c3e50; }
+.chart-close { font-size: 20px; color: #95a5a6; padding: 4px 8px; }
+.chart-legend { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #636e72; }
+.legend-line { width: 14px; height: 3px; border-radius: 2px; }
+.legend-line.pred { background: #0984e3; }
+.legend-line.real { background: #e74c3c; }
+.chart-canvas { width: 100%; height: 240px; background: #fafbfc; border-radius: 10px; }
+.chart-muscle-tabs { display: flex; gap: 6px; }
+.muscle-tab { padding: 4px 10px; font-size: 11px; border-radius: 10px; background: #f1f2f6; color: #636e72; }
+.muscle-tab.active { background: #0984e3; color: #fff; font-weight: 600; }
+.chart-legend { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #636e72; padding: 4px 0; }
+
+/* ================= EMG 紧凑条 ================= */
+.emg-compact { background: #fff; border-radius: 16px; padding: 14px 16px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+.emg-compact-head { display: flex; justify-content: space-between; font-size: 12px; color: #636e72; margin-bottom: 8px; font-weight: 600; }
+.emg-compact-track { height: 8px; background: #ecf0f1; border-radius: 4px; overflow: hidden; }
+.emg-compact-fill { height: 8px; background: linear-gradient(90deg, #00a8ff, #0984e3); border-radius: 4px; transition: width 0.2s ease; }
+
+/* ================= 质量监测卡片 ================= */
+.quality-grid { display: flex; gap: 10px; margin-bottom: 14px; }
+.quality-card { flex: 1; background: #fff; border-radius: 14px; padding: 12px 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); text-align: center; }
+.quality-card.normal { }
+.quality-card.warn { background: #fffdf0; border: 1px solid rgba(241,196,15,0.3); }
+.quality-card.danger { background: #fff5f5; border: 1px solid rgba(231,76,60,0.3); }
+.qc-header { display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 4px; }
+.qc-icon { font-size: 14px; }
+.qc-title { font-size: 11px; color: #95a5a6; font-weight: 500; }
+.qc-score { font-size: 24px; font-weight: 700; color: #2c3e50; }
+.qc-unit { font-size: 11px; font-weight: 400; color: #95a5a6; }
+.qc-label { font-size: 11px; color: #636e72; margin-top: 2px; }
+
+.qc-electrodes { padding: 4px 0; }
+.qc-elec-row { display: flex; align-items: center; gap: 6px; margin: 6px 0; }
+.qc-elec-name { font-size: 10px; color: #636e72; width: 36px; text-align: right; }
+.qc-elec-bar-bg { flex: 1; height: 6px; background: #ecf0f1; border-radius: 3px; overflow: hidden; }
+.qc-elec-bar { height: 6px; border-radius: 3px; transition: width 0.5s ease; }
+.qc-elec-bar.good { background: #2ecc71; }
+.qc-elec-bar.warn { background: #f1c40f; }
+.qc-elec-bar.danger { background: #e74c3c; }
+.qc-elec-val { font-size: 11px; font-weight: 600; color: #2c3e50; width: 28px; }
+.qc-dropout-alert { margin-top: 6px; font-size: 10px; color: #e74c3c; font-weight: 600; }
+
+/* ================= 仪表盘区 ================= */
+.dashboard-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.mini-card {
+  flex: 1;
+  background: #fff;
+  padding: 15px;
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+}
+
+.card-label {
+  font-size: 12px;
+  color: #95a5a6;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.card-val {
+  font-size: 24px;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.unit {
+  font-size: 12px;
+  font-weight: normal;
+  margin-left: 4px;
+}
+
+.danger-bg {
+  background: #ff7675 !important;
+}
+
+.danger-bg .card-label,
+.danger-bg .card-val {
+  color: white !important;
+}
+
+/* ================= 模式切换 ================= */
+.tab-bar {
+  display: flex;
+  background: #edeff2;
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 15px;
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 10px;
+  transition: 0.3s;
+  color: #7f8c8d;
+}
+
+.active-rehab {
+  background-color: #00a8ff;
+  color: white;
+  font-weight: bold;
+}
+
+.active-sport {
+  background-color: #ff9f43;
+  color: white;
+  font-weight: bold;
+}
+
+/* ================= 核心显示区 ================= */
+.display-area {
+  width: 100%;
+  min-height: 400px;
+  margin-top: 15px;
+  background-color: #ffffff;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.rehab-view {
+  padding: 20px 0;
+}
+
+.emg-container {
+  width: 80px;
+  height: 250px;
+  background-color: #ecf0f1;
+  border-radius: 40px;
+  margin: 20px auto;
+  position: relative;
+  overflow: hidden;
+  border: 4px solid #fff;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.emg-bar {
+  width: 100%;
+  background: linear-gradient(to top, #00d2ff, #3a7bd5);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  transition: height 0.1s linear;
+}
+
+.emg-text {
+  display: block;
+  text-align: center;
+  font-weight: bold;
+  color: #34495e;
+  margin-top: 10px;
+}
+
+.sport-view {
+  width: 100%;
+  padding: 10px 0 16px 0;
+}
+
+.arm-canvas {
+  width: 100%;
+  height: 320px;
+  background: #fff;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.vision-hint {
+  font-size: 11px;
+  color: #bdc3c7;
+  text-align: center;
+  margin-top: 8px;
+}
+
+/* ================= 底部操作 ================= */
+.footer {
+  margin-top: 20px;
+  padding-bottom: 30px;
+}
+
+.save-btn {
+  background: #0984e3;
+  color: white;
+  border-radius: 30px;
+  font-weight: bold;
+  width: 85% !important;
+  box-shadow: 0 5px 15px rgba(9, 132, 227, 0.3);
+}
+
+/* ================= 动画定义 ================= */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(46, 204, 113, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+}
+
+/* ================= 医生模式：患者管理 ================= */
+.invite-code-card {
+  background: linear-gradient(135deg, #0984e3 0%, #00a8ff 100%);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 15px;
+  color: #fff;
+}
+
+.invite-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.invite-label {
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+.invite-code-num {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  font-family: 'Courier New', monospace;
+}
+
+.invite-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.invite-btn {
+  flex: 1;
+  height: 36px;
+  line-height: 36px;
+  font-size: 13px;
+  border-radius: 18px;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-weight: 600;
+}
+
+.share-btn {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* 统计栏 */
+.doctor-stats {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.stat-item {
+  flex: 1;
+  background: #fff;
+  border-radius: 12px;
+  padding: 14px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.stat-num {
+  font-size: 28px;
+  font-weight: 700;
+  color: #2c3e50;
+  display: block;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #95a5a6;
+  display: block;
+  margin-top: 4px;
+}
+
+/* 患者列表 */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.section-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.refresh-btn {
+  background: #f1f2f6;
+  color: #747d8c;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.patient-scroll {
+  max-height: 420px;
+}
+
+.patient-card {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.patient-card:active {
+  background: #f8f9fb;
+}
+
+.p-card-left {
+  position: relative;
+  margin-right: 14px;
+}
+
+.p-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #e3f2fd;
+  color: #0984e3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.p-online-dot {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+
+.p-online-dot.online {
+  background: #2ecc71;
+}
+
+.p-online-dot.offline {
+  background: #bdc3c7;
+}
+
+.p-card-mid {
+  flex: 1;
+}
+
+.p-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 4px;
+}
+
+.p-data-row {
+  display: flex;
+  gap: 8px;
+}
+
+.p-data {
+  font-size: 11px;
+  color: #95a5a6;
+  background: #f1f2f6;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.p-no-data {
+  font-size: 11px;
+  color: #bdc3c7;
+  font-style: italic;
+}
+
+.p-card-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.p-arrow {
+  font-size: 22px;
+  color: #c8ccd4;
+}
+
+.p-badge {
+  background: #e74c3c;
+  color: #fff;
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+}
+
+/* 空患者状态 */
+.empty-patients {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.empty-text {
+  font-size: 17px;
+  font-weight: 600;
+  color: #7f8c8d;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.empty-hint {
+  font-size: 13px;
+  color: #bdc3c7;
+  line-height: 1.5;
+}
+
+/* 浮层按钮 */
+.fab {
+  position: fixed; bottom: 90px; right: 20px;
+  width: 56px; height: 56px;
+  background: #007aff; color: #fff;
+  border-radius: 50%; font-size: 30px; font-weight: 300;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px rgba(0,122,255,0.35); z-index: 50;
+}
+
+/* ================= 患者 Tab 切换 ================= */
+.patient-tab-bar {
+  display: flex;
+  background: #edeff2;
+  border-radius: 14px;
+  padding: 4px;
+  margin-bottom: 15px;
+}
+
+.patient-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 8px;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #7f8c8d;
+  position: relative;
+  transition: all 0.25s ease;
+}
+
+.patient-tab.active {
+  background: #fff;
+  color: #0984e3;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.patient-tab-icon {
+  font-size: 16px;
+}
+
+.patient-tab-text {
+  font-size: 14px;
+}
+
+.patient-tab-badge {
+  position: absolute;
+  top: -4px;
+  right: 8px;
+  font-size: 10px;
+  background: #e74c3c;
+  color: #fff;
+  min-width: 17px;
+  height: 17px;
+  line-height: 17px;
+  border-radius: 9px;
+  text-align: center;
+  padding: 0 4px;
+}
+
+/* ================= 活跃任务横幅（患者） ================= */
+.active-task-banner {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  margin: 0 0 15px 0;
+  padding: 16px 18px;
+  border-radius: 16px;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.08);
+  transition: border-color 0.3s ease;
+}
+
+.active-task-banner.in-zone {
+  border-color: rgba(46, 204, 113, 0.5);
+  box-shadow: 0 0 20px rgba(46, 204, 113, 0.15);
+}
+
+.atb-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.atb-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+
+.atb-icon {
+  font-size: 16px;
+}
+
+.atb-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.atb-badge {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.12);
+  color: #aab;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.atb-badge.in-zone {
+  background: rgba(46, 204, 113, 0.2);
+  color: #2ecc71;
+}
+
+/* 角度可视化轨道 */
+.atb-angle-track {
+  margin-bottom: 12px;
+}
+
+.atb-track-bg {
+  position: relative;
+  height: 6px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 3px;
+  margin-bottom: 4px;
+  overflow: visible;
+}
+
+.atb-target-zone {
+  position: absolute;
+  top: 0;
+  height: 6px;
+  background: rgba(46, 204, 113, 0.5);
+  border-radius: 3px;
+}
+
+.atb-current-dot {
+  position: absolute;
+  top: -5px;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border: 2px solid #0984e3;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  transition: left 0.2s ease-out;
+  z-index: 2;
+  box-shadow: 0 0 8px rgba(9,132,227,0.5);
+}
+
+.atb-current-dot.pulse {
+  border-color: #2ecc71;
+  box-shadow: 0 0 14px rgba(46,204,113,0.7);
+  animation: dot-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes dot-pulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(46,204,113,0.5); }
+  50% { box-shadow: 0 0 18px rgba(46,204,113,0.9); }
+}
+
+.atb-track-labels {
+  display: flex;
+  justify-content: space-between;
+}
+
+.atb-track-labels text {
+  font-size: 9px;
+  color: rgba(255,255,255,0.25);
+}
+
+/* 统计数据行 */
+.atb-stats {
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 10px;
+}
+
+.atb-stat {
+  text-align: center;
+}
+
+.atb-stat-val {
+  font-size: 18px;
+  font-weight: 700;
+  display: block;
+  color: #fff;
+}
+
+.atb-stat-lbl {
+  font-size: 10px;
+  color: rgba(255,255,255,0.4);
+  display: block;
+  margin-top: 2px;
+}
+
+.atb-actions {
+  text-align: right;
+}
+
+.atb-btn-detail {
+  background: rgba(255,255,255,0.12) !important;
+  color: #fff !important;
+  border-radius: 12px !important;
+  font-size: 12px !important;
+  border: none !important;
+}
+
+/* ================= 角色加载 ================= */
+.loading-role {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 0;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f1f2f6;
+  border-top-color: #0984e3;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  margin-top: 16px;
+  font-size: 14px;
+  color: #95a5a6;
+}
+
+
+
+/* ================= 患者任务卡片 ================= */
+.patient-tasks-section { margin: 0 0 15px 0; }
+.pt-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.pt-title { font-size: 16px; font-weight: 700; color: #2c3e50; }
+.pt-count { font-size: 12px; color: #95a5a6; background: #f1f2f6; padding: 2px 10px; border-radius: 10px; }
+.pt-card { display: flex; justify-content: space-between; align-items: center; background: #fff; border-radius: 14px; padding: 14px 16px; margin-bottom: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.pt-card:active { background: #f8f9fb; }
+.pt-card-left { flex: 1; min-width: 0; }
+.pt-card-title { font-size: 15px; font-weight: 600; color: #2c3e50; display: block; margin-bottom: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pt-card-meta { display: flex; gap: 6px; }
+.pt-meta-tag { font-size: 10px; color: #7f8c8d; background: #f1f2f6; padding: 2px 8px; border-radius: 4px; }
+.pt-card-right { text-align: right; flex-shrink: 0; margin-left: 12px; }
+.pt-status { font-size: 11px; padding: 3px 10px; border-radius: 10px; font-weight: 600; display: inline-block; margin-bottom: 4px; }
+.pt-status.pending { background: #fff3e0; color: #ff9800; }
+.pt-status.completed { background: #e8f5e9; color: #4caf50; }
+.pt-status.overdue { background: #ffebee; color: #e74c3c; }
+.pt-deadline { font-size: 10px; color: #95a5a6; display: block; }
+.pt-deadline.overdue-text { color: #e74c3c; font-weight: 600; }
+
+/* 空任务状态 */
+.empty-tasks {
+  text-align: center;
+  padding: 60px 30px;
+}
+
+.empty-tasks-icon {
+  font-size: 56px;
+  display: block;
+  margin-bottom: 16px;
+}
+
+.empty-tasks-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: #7f8c8d;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.empty-tasks-hint {
+  font-size: 13px;
+  color: #bdc3c7;
+  line-height: 1.5;
+  display: block;
+}
+
+
+
+/* ================= 文本辅助 ================= */
+.txt-success {
+  color: #2ecc71;
+  font-weight: bold;
+}
+
+.txt-error {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.txt-bold {
+  font-weight: bold;
+  color: #2c3e50;
+}

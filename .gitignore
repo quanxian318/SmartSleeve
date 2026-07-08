@@ -1,0 +1,29 @@
+# Local secrets and machine-specific config
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.pfx
+*secret*
+*token*
+
+# WeChat developer tool private settings
+5_Mini_Program/project.private.config.json
+
+# Python cache/build outputs
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Node package caches
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

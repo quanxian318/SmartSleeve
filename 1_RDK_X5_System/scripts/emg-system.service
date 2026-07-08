@@ -1,0 +1,44 @@
+[Unit]
+Description=智能健康袖套 EMG 系统
+Documentation=https://github.com/quanxian318/smart-health-sleeve
+After=network-online.target time-sync.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root
+
+# ROS2环境 + 启动
+Environment="HOME=/root"
+Environment="WITH_VOICE=1"
+Environment="BMI=22.0"
+Environment="HEIGHT=170.0"
+Environment="WEIGHT=70.0"
+Environment="GENDER=0"
+Environment="B_REST=200"
+Environment="B_90=500"
+Environment="T_REST=80"
+Environment="T_90=120"
+
+ExecStartPre=/bin/bash -c 'test -f /root/anchorcalib_tcn_bpu_v2.bin || (echo "TCN模型缺失" && exit 1)'
+ExecStart=/bin/bash -c 'source /opt/ros/humble/setup.bash && exec /root/start_all.sh'
+
+# 崩溃自动重启
+Restart=always
+RestartSec=10
+StartLimitInterval=300
+StartLimitBurst=5
+
+# 信号处理
+KillMode=mixed
+KillSignal=SIGTERM
+TimeoutStopSec=15
+
+# 日志
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=emg-system
+
+[Install]
+WantedBy=multi-user.target

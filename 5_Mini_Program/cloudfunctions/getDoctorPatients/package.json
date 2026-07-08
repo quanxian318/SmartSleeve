@@ -1,0 +1,9 @@
+{
+  "name": "getDoctorPatients",
+  "version": "1.0.0",
+  "description": "Get doctor's patients with summary stats",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

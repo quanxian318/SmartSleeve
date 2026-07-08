@@ -1,0 +1,9 @@
+{
+  "name": "fetchMyTasks",
+  "version": "1.0.0",
+  "description": "Patient fetches their own tasks (bypasses DB permission)",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

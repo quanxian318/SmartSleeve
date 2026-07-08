@@ -1,0 +1,157 @@
+<!-- ==================== 医生：任务管理 ==================== -->
+<view wx:if="{{isDoctor}}" class="doctor-task-page">
+  <view class="dt-header">
+    <text class="dt-title">任务管理中心</text>
+    <view class="dt-header-actions">
+      <button class="dt-record-btn" size="mini" bindtap="goRecordAction">🎬 录制标准动作</button>
+      <text class="dt-count">共 {{doctorTasks.length}} 个任务</text>
+    </view>
+  </view>
+  <scroll-view scroll-y class="dt-task-list" wx:if="{{doctorTasks.length > 0}}">
+    <view wx:for="{{doctorTasks}}" wx:key="_id" class="dt-task-card" bindtap="openDoctorTask" data-taskid="{{item._id}}">
+      <view class="dt-task-top">
+        <text class="dt-task-patient">👤 {{item.patientName || '患者'}}</text>
+        <view class="dt-task-status {{item.status}}">
+          <text wx:if="{{item.status === 'pending'}}">待完成</text>
+          <text wx:elif="{{item.status === 'completed'}}">已完成</text>
+          <text wx:else>{{item.status}}</text>
+        </view>
+      </view>
+      <text class="dt-task-title">{{item.title}}</text>
+      <view class="dt-task-bottom">
+        <text class="dt-task-angle">{{item.targetAngleMin}}° — {{item.targetAngleMax}}°</text>
+        <text class="dt-task-reps">{{item.repetitions}} 次</text>
+        <text wx:if="{{item.deadline}}" class="dt-task-deadline">截止: {{item.deadline}}</text>
+      </view>
+    </view>
+  </scroll-view>
+  <view wx:else class="dt-empty">
+    <text class="dt-empty-icon">📋</text>
+    <text class="dt-empty-text">暂无任务</text>
+    <text class="dt-empty-hint">切换到"患者管理"Tab发布新任务</text>
+  </view>
+</view>
+
+<!-- ==================== 患者：3D 数字孪生 ==================== -->
+<canvas wx:if="{{isPatient}}"
+  type="webgl"
+  id="glCanvas"
+  class="gl-canvas"
+  bindtouchstart="onTouchStart"
+  bindtouchmove="onTouchMove"
+  bindtouchend="onTouchEnd"
+>
+  <cover-view class="status-overlay">
+    <cover-view class="connection-badge {{rdkStatus === '演示模式' ? 'demo' : (rdkStatus === '已连接' ? 'online' : 'offline')}}">
+      <cover-view class="badge-dot"></cover-view>
+      <cover-view class="badge-text">{{rdkStatus === '演示模式' ? '演示模式' : (rdkStatus === '已连接' ? 'RDK X5 已同步' : rdkStatus)}}</cover-view>
+    </cover-view>
+    <cover-view class="angle-display">
+      <cover-view class="angle-row">
+        <cover-view class="angle-item">
+          <cover-view class="angle-num">{{rdkAngle}}°</cover-view>
+          <cover-view class="angle-label">肘关节</cover-view>
+        </cover-view>
+        <cover-view class="angle-divider"></cover-view>
+        <cover-view class="angle-item">
+          <cover-view class="angle-num">{{rightUpperAngle}}°</cover-view>
+          <cover-view class="angle-label">大臂</cover-view>
+        </cover-view>
+      </cover-view>
+    </cover-view>
+    <!-- 输入源选择 -->
+    <cover-view class="source-selector" bindtap="toggleSourceMenu">
+      <cover-view class="source-badge-text">输入源: {{emgSourceLabel}}</cover-view>
+      <cover-view class="source-arrow">{{showSourceMenu ? '▲' : '▼'}}</cover-view>
+    </cover-view>
+    <cover-view class="vital-row">
+      <cover-view class="vital-item">
+        <cover-view class="vital-num heart-color">{{bpm}}</cover-view>
+        <cover-view class="vital-label">心率 BPM</cover-view>
+      </cover-view>
+    </cover-view>
+  </cover-view>
+
+  <!-- 输入源下拉菜单（canvas 直接子元素，避免 cover-view 嵌套定位失效） -->
+  <cover-view wx:if="{{showSourceMenu}}" class="source-menu">
+    <cover-view class="source-option {{emgSource === 'tcn' ? 'active' : ''}}" bindtap="selectSource" data-source="tcn">TCN (RDK端)</cover-view>
+    <cover-view class="source-option {{emgSource === 'rf' ? 'active' : ''}}" bindtap="selectSource" data-source="rf">RF (小程序端)</cover-view>
+    <cover-view class="source-option {{emgSource === 'measured' ? 'active' : ''}}" bindtap="selectSource" data-source="measured">实测 (BLE)</cover-view>
+  </cover-view>
+
+  <cover-view class="reset-btn" bindtap="resetCamera">
+    <cover-view class="reset-icon">↺</cover-view>
+  </cover-view>
+
+  <cover-view class="legend">
+    <cover-view class="legend-item">
+      <cover-view class="legend-dot" style="background: #2ecc71;"></cover-view>
+      <cover-view class="legend-text">静息</cover-view>
+    </cover-view>
+    <cover-view class="legend-item">
+      <cover-view class="legend-dot" style="background: #f1c40f;"></cover-view>
+      <cover-view class="legend-text">中等激活</cover-view>
+    </cover-view>
+    <cover-view class="legend-item">
+      <cover-view class="legend-dot" style="background: #e74c3c;"></cover-view>
+      <cover-view class="legend-text">高度激活</cover-view>
+    </cover-view>
+  </cover-view>
+
+  <cover-view wx:if="{{showMuscleDetail}}" class="muscle-popup visible">
+    <cover-view class="popup-header">
+      <cover-view class="muscle-name">{{selectedMuscleName}}</cover-view>
+      <cover-view class="muscle-en">{{selectedMuscleEn}}</cover-view>
+    </cover-view>
+    <cover-view class="popup-body">
+      <cover-view class="emg-row">
+        <cover-view class="emg-label">{{emgSourceLabel}} EMG值</cover-view>
+        <cover-view class="emg-value">{{selectedEmgValue}} μV</cover-view>
+      </cover-view>
+      <cover-view class="activation-bar-bg">
+        <cover-view class="activation-bar" style="width: {{activationPercent}}%; background: {{activationColor}};"></cover-view>
+      </cover-view>
+      <cover-view class="activation-text">发力程度：{{activationLevel}} ({{activationPercent}}%)</cover-view>
+    </cover-view>
+    <cover-view class="popup-close" bindtap="closeMuscleDetail">关闭</cover-view>
+  </cover-view>
+
+  <!-- ===== 训练进度浮层 ===== -->
+  <cover-view wx:if="{{hasActiveTask}}" class="twin-training-bar">
+    <cover-view class="ttb-top">
+      <cover-view class="ttb-task-name">{{twinTask.title}}</cover-view>
+      <cover-view class="ttb-target">目标 {{twinTask.targetAngleMin}}°-{{twinTask.targetAngleMax}}°</cover-view>
+    </cover-view>
+
+    <cover-view class="ttb-progress-track">
+      <cover-view class="ttb-progress-fill" style="width: {{twinReps / twinTask.repetitions * 100}}%"></cover-view>
+    </cover-view>
+
+    <cover-view class="ttb-data-row">
+      <cover-view class="ttb-data-item">
+        <cover-view class="ttb-data-num">{{twinReps}}/{{twinTask.repetitions}}</cover-view>
+        <cover-view class="ttb-data-lbl">次数</cover-view>
+      </cover-view>
+      <cover-view class="ttb-data-item">
+        <cover-view class="ttb-data-num {{twinInZone ? 'in-zone' : ''}}">{{rdkAngle}}°</cover-view>
+        <cover-view class="ttb-data-lbl">当前角度</cover-view>
+      </cover-view>
+    </cover-view>
+
+    <cover-view class="ttb-zone-bar">
+      <cover-view class="ttb-zone-bg"></cover-view>
+      <cover-view class="ttb-zone-fill" style="left: {{twinTask.targetAngleMin / 180 * 100}}%; width: {{(twinTask.targetAngleMax - twinTask.targetAngleMin) / 180 * 100}}%;"></cover-view>
+      <cover-view class="ttb-zone-dot {{twinInZone ? 'pulse' : ''}}" style="left: {{rdkAngle / 180 * 100}}%;"></cover-view>
+    </cover-view>
+
+    <!-- 实时引导 -->
+    <cover-view wx:if="{{trainingActive && twinGuidance}}" class="ttb-guidance {{twinGuidanceType}}">
+      <cover-view class="ttb-guidance-text">{{twinGuidance}}</cover-view>
+    </cover-view>
+
+    <cover-view class="ttb-btns">
+      <cover-view wx:if="{{!trainingActive}}" class="ttb-start-btn" bindtap="startTwinTraining">▶ 开始训练</cover-view>
+      <cover-view wx:else class="ttb-stop-btn" bindtap="stopTwinTraining">⏹ 停止训练</cover-view>
+    </cover-view>
+  </cover-view>
+</canvas>

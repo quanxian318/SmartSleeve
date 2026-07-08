@@ -1,0 +1,80 @@
+<view class="page">
+  <!-- 患者信息头 -->
+  <view class="patient-header">
+    <view class="ph-avatar">{{patientName ? patientName.charAt(0) : 'P'}}</view>
+    <view class="ph-info">
+      <text class="ph-name">{{patientName || '患者'}}</text>
+      <view wx:if="{{patient}}" class="ph-stats">
+        <text class="ph-stat" wx:if="{{patient.height}}">身高 {{patient.height}}cm</text>
+        <text class="ph-stat" wx:if="{{patient.weight}}">体重 {{patient.weight}}kg</text>
+        <text class="ph-stat" wx:if="{{patient.bmi}}">BMI {{patient.bmi}}</text>
+      </view>
+      <!-- 在线状态 -->
+      <view wx:if="{{patient && patient.lastSensorTime}}" class="ph-online">
+        <view class="online-dot {{patient.lastSensorTime > now - 30000 ? 'live' : 'off'}}"></view>
+        <text>{{patient.lastSensorTime > now - 30000 ? '在线' : '离线'}}</text>
+      </view>
+    </view>
+    <button class="publish-task-btn" size="mini" bindtap="showPublishTask">+ 发布任务</button>
+  </view>
+
+  <!-- Tab 切换 -->
+  <view class="detail-tabs">
+    <view class="dtab {{activeTab === 'records' ? 'active' : ''}}" bindtap="switchTab" data-tab="records">训练记录</view>
+    <view class="dtab {{activeTab === 'tasks' ? 'active' : ''}}" bindtap="switchTab" data-tab="tasks">任务进度</view>
+  </view>
+
+  <!-- 训练记录 -->
+  <scroll-view scroll-y class="detail-body" wx:if="{{activeTab === 'records'}}">
+    <view wx:if="{{records.length > 0}}">
+      <view wx:for="{{records}}" wx:key="_id" class="record-item">
+        <view class="item-left">
+          <view class="mode-tag {{item.mode === 'sport' ? 'tag-sport' : 'tag-rehab'}}">
+            {{item.mode === 'sport' ? '锻炼' : '康复'}}
+          </view>
+          <view class="date-text">{{item.dateDisplay}}</view>
+          <view class="data-grid">
+            <view class="data-cell"><text class="l">肌电</text><text class="v">{{item.maxEmg}}</text></view>
+            <view class="data-cell"><text class="l">角度</text><text class="v">{{item.visionAngle}}°</text></view>
+            <view class="data-cell"><text class="l">心率</text><text class="v">{{item.avgBpm}}</text></view>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view wx:else class="empty-state">
+      <text class="empty-icon">📊</text>
+      <text class="empty-text">暂无训练记录</text>
+      <text class="empty-hint">患者完成训练后将显示在这里</text>
+    </view>
+  </scroll-view>
+
+  <!-- 任务列表 -->
+  <scroll-view scroll-y class="detail-body" wx:if="{{activeTab === 'tasks'}}">
+    <view wx:if="{{tasks.length > 0}}">
+      <view wx:for="{{tasks}}" wx:key="_id" class="task-item" bindtap="openTaskDetail" data-taskid="{{item._id}}">
+        <view class="task-left">
+          <text class="task-title">{{item.title}}</text>
+          <view class="task-meta-row">
+            <text class="task-meta-tag">{{item.targetAngleMin}}°-{{item.targetAngleMax}}°</text>
+            <text class="task-meta-tag">{{item.repetitions}}次</text>
+          </view>
+        </view>
+        <view class="task-right">
+          <view class="task-status {{item.status}}">
+            <text wx:if="{{item.status === 'pending'}}">待完成</text>
+            <text wx:elif="{{item.status === 'completed'}}">已完成</text>
+            <text wx:else>{{item.status}}</text>
+          </view>
+          <text class="task-date" wx:if="{{item.deadline}}">截止: {{item.deadline}}</text>
+        </view>
+      </view>
+    </view>
+    <view wx:else class="empty-state">
+      <text class="empty-icon">📋</text>
+      <text class="empty-text">暂无训练任务</text>
+      <text class="empty-hint">点击上方按钮为患者发布任务</text>
+    </view>
+  </scroll-view>
+
+
+</view>

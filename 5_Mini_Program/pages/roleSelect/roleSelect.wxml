@@ -1,0 +1,45 @@
+<view class="page">
+  <view class="hero">
+    <view class="logo-area">
+      <view class="logo-icon">🩺</view>
+      <view class="app-name">智能健康袖套</view>
+    </view>
+    <view class="title">选择您的身份</view>
+    <view class="subtitle">医生/教练可以管理多名患者并发布训练任务</view>
+  </view>
+
+  <view class="role-cards">
+    <view
+      class="role-card {{selectedRole === 'doctor' ? 'selected-doctor' : ''}}"
+      bindtap="selectRole"
+      data-role="doctor"
+    >
+      <view class="card-icon">👨‍⚕️</view>
+      <view class="card-title">我是医生/教练</view>
+      <view class="card-desc">管理患者 · 发布康复任务 · 查看训练数据</view>
+      <view class="check-mark" wx:if="{{selectedRole === 'doctor'}}">✓</view>
+    </view>
+
+    <view
+      class="role-card {{selectedRole === 'patient' ? 'selected-patient' : ''}}"
+      bindtap="selectRole"
+      data-role="patient"
+    >
+      <view class="card-icon">🏃</view>
+      <view class="card-title">我是患者/学员</view>
+      <view class="card-desc">完成训练任务 · 实时数据监控 · 康复趋势分析</view>
+      <view class="check-mark" wx:if="{{selectedRole === 'patient'}}">✓</view>
+    </view>
+  </view>
+
+  <view class="action-area">
+    <button
+      class="confirm-btn {{selectedRole ? 'active' : ''}}"
+      bindtap="confirmRole"
+      loading="{{loading}}"
+      disabled="{{!selectedRole || loading}}"
+    >
+      {{loading ? '正在设定...' : '确认选择'}}
+    </button>
+  </view>
+</view>

@@ -1,0 +1,9 @@
+{
+  "name": "setUserRole",
+  "version": "1.0.0",
+  "description": "Set user role on first launch and generate doctor invite code",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

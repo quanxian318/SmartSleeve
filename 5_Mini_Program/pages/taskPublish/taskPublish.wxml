@@ -1,0 +1,128 @@
+<view class="pg">
+
+  <view class="sec">
+    <text class="sec-t">选择学员</text>
+    <scroll-view scroll-x class="pick-row" wx:if="{{patients.length > 0}}">
+      <view wx:for="{{patients}}" wx:key="_openid" wx:for-index="i"
+        class="pick {{picked === i ? 'on' : ''}}"
+        bindtap="pickPatient" data-i="{{i}}">
+        <view class="pick-f">{{item.customName ? item.customName.charAt(0) : '?'}}</view>
+        <text class="pick-n">{{item.customName}}</text>
+      </view>
+    </scroll-view>
+    <view wx:else class="hint">暂无所管学员，请先邀请绑定</view>
+  </view>
+
+  <!-- 标准动作模板 -->
+  <view class="sec">
+    <view class="tpl-header" bindtap="toggleTemplates">
+      <text class="sec-t" style="margin-bottom:0">标准动作模板（可选）</text>
+      <text class="tpl-arrow">{{showTemplates ? '▲' : '▼'}}</text>
+    </view>
+
+    <!-- 已选模板 -->
+    <view wx:if="{{pickedTemplate}}" class="tpl-picked">
+      <text class="tpl-picked-name">📋 {{pickedTemplate.actionName}}</text>
+      <text class="tpl-picked-info">{{pickedTemplate.targetAngleMin}}°-{{pickedTemplate.targetAngleMax}}° / {{pickedTemplate.repetitions}}次</text>
+      <view class="tpl-clear" bindtap="clearTemplate">✕</view>
+    </view>
+
+    <!-- 模板列表 -->
+    <view wx:if="{{showTemplates}}" class="tpl-list">
+      <view wx:if="{{templates.length > 0}}">
+        <view wx:for="{{templates}}" wx:key="_id" wx:for-index="idx"
+          class="tpl-card {{pickedTemplate && pickedTemplate._id === item._id ? 'picked' : ''}}"
+          bindtap="pickTemplate" data-idx="{{idx}}">
+          <view class="tpl-card-top">
+            <text class="tpl-card-name">{{item.actionName}}</text>
+            <text class="tpl-card-type">{{item.actionType === 'elbow_flexion' ? '肘屈伸' : item.actionType === 'shoulder_press' ? '肩推举' : item.actionType}}</text>
+          </view>
+          <view class="tpl-card-tags">
+            <text>{{item.targetAngleMin}}° - {{item.targetAngleMax}}°</text>
+            <text>{{item.repetitions}}次</text>
+          </view>
+        </view>
+      </view>
+      <view wx:else class="tpl-empty">
+        <text>暂无标准动作模板</text>
+        <text class="tpl-empty-hint">请先在"数字孪生"页录制标准动作</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="sec">
+    <text class="sec-t">任务信息</text>
+    <input class="inp" placeholder="输入任务标题" value="{{title}}" bindinput="onTitle" maxlength="30"/>
+    <textarea class="area" placeholder="动作说明与注意事项（选填）" value="{{desc}}" bindinput="onDesc" maxlength="200"/>
+  </view>
+
+  <view class="sec">
+    <text class="sec-t">目标角度区间</text>
+    <view class="range-bar">
+      <view class="range-track">
+        <view class="range-fill" style="left: {{angMin / 180 * 100}}%; width: {{(angMax - angMin) / 180 * 100}}%;"></view>
+      </view>
+      <view class="range-lbl"><text>0</text><text>90</text><text>180</text></view>
+    </view>
+
+    <view class="row">
+      <view class="col">
+        <text class="lbl">最小</text>
+        <view class="step">
+          <view class="step-b" bindtap="step" data-k="angMin" data-d="-5">−</view>
+          <text class="step-v">{{angMin}}°</text>
+          <view class="step-b" bindtap="step" data-k="angMin" data-d="5">+</view>
+        </view>
+      </view>
+      <view class="col">
+        <text class="lbl">最大</text>
+        <view class="step">
+          <view class="step-b" bindtap="step" data-k="angMax" data-d="-5">−</view>
+          <text class="step-v">{{angMax}}°</text>
+          <view class="step-b" bindtap="step" data-k="angMax" data-d="5">+</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="sec">
+    <text class="sec-t">训练设置</text>
+    <view class="row">
+      <view class="col">
+        <text class="lbl">重复次数</text>
+        <view class="step">
+          <view class="step-b" bindtap="step" data-k="reps" data-d="-1">−</view>
+          <text class="step-v">{{reps}}</text>
+          <view class="step-b" bindtap="step" data-k="reps" data-d="1">+</view>
+        </view>
+      </view>
+      <view class="col">
+        <text class="lbl">截止日期</text>
+        <picker mode="date" value="{{deadline}}" bindchange="onDeadline">
+          <view class="date">{{deadline || '选日期'}}</view>
+        </picker>
+      </view>
+    </view>
+  </view>
+
+  <view class="sec" wx:if="{{title}}">
+    <text class="sec-t">预览</text>
+    <view class="preview">
+      <view class="pv-top">
+        <text class="pv-t">{{title}}</text>
+        <text class="pv-b">待完成</text>
+      </view>
+      <text class="pv-d" wx:if="{{desc}}">{{desc}}</text>
+      <view class="pv-tags">
+        <text>{{angMin}}° - {{angMax}}°</text>
+        <text>{{reps}}次</text>
+        <text wx:if="{{deadline}}">截止 {{deadline}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="bot">
+    <button class="btn" bindtap="submit" loading="{{sending}}">发布任务</button>
+  </view>
+
+</view>

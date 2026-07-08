@@ -1,0 +1,40 @@
+{
+  "feature_names": [
+    "biceps_rest",
+    "biceps_90",
+    "biceps_peak",
+    "biceps_auc",
+    "biceps_slope",
+    "biceps_cv90",
+    "triceps_rest",
+    "triceps_90",
+    "triceps_peak",
+    "triceps_auc",
+    "triceps_slope",
+    "triceps_cv90",
+    "height",
+    "weight",
+    "BMI",
+    "gender"
+  ],
+  "recovery_formula": "V_emg = ratio × (V_90 - V_rest) + V_rest",
+  "motion_features": [
+    "angle_norm",
+    "angular_vel",
+    "angular_acc",
+    "sin_angle",
+    "cos_angle",
+    "phase_rest",
+    "phase_flexion",
+    "phase_hold",
+    "phase_extension",
+    "phase_training"
+  ],
+  "n_phases": 5,
+  "angle_max": 180.0,
+  "window_size": 64,
+  "window_stride": 4,
+  "fs": 100,
+  "adc_vref": null,
+  "adc_max": null
+}

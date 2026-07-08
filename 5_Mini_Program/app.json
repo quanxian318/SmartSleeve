@@ -1,0 +1,52 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/roleSelect/roleSelect",
+    "pages/digitalTwin/digitalTwin",
+    "pages/history/history",
+    "pages/patientDetail/patientDetail",
+    "pages/taskPublish/taskPublish",
+    "pages/taskDetail/taskDetail",
+    "pages/actionRecord/actionRecord"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#f5f6fa",
+    "navigationBarTitleText": "智能健康袖套",
+    "navigationBarTextStyle": "black",
+    "navigationStyle": "default"
+  },
+  "tabBar": {
+    "color": "#7a7e83",
+    "selectedColor": "#00a8ff",
+    "backgroundColor": "#ffffff",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "实时监控",
+        "iconPath": "images/tab-monitor.png",
+        "selectedIconPath": "images/tab-monitor-active.png"
+      },
+      {
+        "pagePath": "pages/digitalTwin/digitalTwin",
+        "text": "数字孪生",
+        "iconPath": "images/tab-twin.png",
+        "selectedIconPath": "images/tab-twin-active.png"
+      },
+      {
+        "pagePath": "pages/history/history",
+        "text": "个人中心",
+        "iconPath": "images/tab-user.png",
+        "selectedIconPath": "images/tab-user-active.png"
+      }
+    ]
+  },
+  "permission": {
+    "bluetooth": {
+      "desc": "需要连接心电测量仪获取心率数据"
+    }
+  },
+  "renderer": "webview",
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

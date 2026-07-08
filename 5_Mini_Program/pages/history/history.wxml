@@ -1,0 +1,223 @@
+<view class="container">
+
+  <!-- 1. 用户信息区 -->
+  <view class="user-card">
+    <view class="avatar">{{userInfo && userInfo.nickName ? userInfo.nickName.charAt(0) : '👤'}}</view>
+    <view class="name-section">
+      <block wx:if="{{!isEditing}}">
+        <text class="nickname">{{userInfo.nickName || '加载中...'}}</text>
+        <button class="edit-btn" bindtap="startEdit" size="mini">修改名称</button>
+      </block>
+      <block wx:else>
+        <input class="name-input" focus value="{{tempName}}" bindinput="onNameInput" />
+        <view class="edit-actions">
+          <button size="mini" type="primary" bindtap="saveNickname">保存</button>
+          <button size="mini" bindtap="cancelEdit">取消</button>
+        </view>
+      </block>
+    </view>
+    <!-- 角色标签 -->
+    <view class="role-badge {{isDoctor ? 'badge-doctor' : 'badge-patient'}}">
+      {{isDoctor ? '医生/教练' : '患者/学员'}}
+    </view>
+  </view>
+
+  <!-- ==================== 医生专属区 ==================== -->
+  <block wx:if="{{isDoctor}}">
+    <!-- 邀请码卡片 -->
+    <view class="invite-card">
+      <view class="invite-card-header">
+        <text class="invite-card-title">我的邀请码</text>
+        <button class="refresh-code-btn" size="mini" bindtap="refreshInviteCode">刷新</button>
+      </view>
+      <view class="invite-code-display">{{inviteCode || '加载中...'}}</view>
+      <view class="invite-card-actions">
+        <button class="invite-action-btn" bindtap="copyDoctorInviteCode">📋 复制邀请码</button>
+        <button class="invite-action-btn" bindtap="generateQRCode">📱 生成小程序码</button>
+      </view>
+    </view>
+
+    <!-- 统计数据 -->
+    <view class="stats-row">
+      <view class="stat-card">
+        <text class="stat-num">{{doctorStats.patientCount}}</text>
+        <text class="stat-label">管理患者</text>
+      </view>
+      <view class="stat-card">
+        <text class="stat-num">{{doctorStats.taskCount}}</text>
+        <text class="stat-label">已发布任务</text>
+      </view>
+    </view>
+  </block>
+
+  <!-- ==================== 患者专属区 ==================== -->
+  <block wx:if="{{isPatient}}">
+    <!-- 我的医生 -->
+    <view class="doctor-connect-card">
+      <block wx:if="{{doctorName}}">
+        <view class="dc-bound">
+          <view class="dc-icon">👨‍⚕️</view>
+          <view class="dc-info">
+            <text class="dc-label">我的医生</text>
+            <text class="dc-name">{{doctorName}}</text>
+          </view>
+        </view>
+      </block>
+      <block wx:else>
+        <view class="dc-unbound">
+          <text class="dc-hint">暂未绑定医生</text>
+          <button class="dc-bind-btn" size="mini" bindtap="toggleBindInput">绑定医生</button>
+        </view>
+        <!-- 绑定输入 -->
+        <view wx:if="{{showBindInput}}" class="bind-input-row">
+          <input class="bind-code-input" placeholder="输入6位邀请码" maxlength="6" value="{{inviteCodeInput}}" bindinput="onInviteCodeInput" />
+          <button class="bind-confirm-btn" size="mini" type="primary" bindtap="bindToDoctor" loading="{{bindLoading}}">确认绑定</button>
+        </view>
+      </block>
+    </view>
+
+    <!-- 我的任务入口 -->
+    <view class="my-tasks-entry" bindtap="navigateToMyTasks">
+      <view class="mte-left">
+        <text class="mte-icon">📝</text>
+        <text class="mte-title">我的训练任务</text>
+      </view>
+      <text class="mte-arrow">›</text>
+    </view>
+  </block>
+
+  <!-- 2. 身体数据卡片 -->
+  <view class="profile-card">
+    <view class="profile-header">
+      <text class="profile-title">身体数据</text>
+      <block wx:if="{{!isEditingProfile}}">
+        <button class="edit-btn" bindtap="startEditProfile" size="mini">编辑</button>
+      </block>
+    </view>
+
+    <block wx:if="{{!isEditingProfile}}">
+      <view class="profile-data-row">
+        <view class="profile-item">
+          <text class="profile-label">性别</text>
+          <text class="profile-value">{{gender === 0 ? '男' : '女'}}</text>
+        </view>
+        <view class="profile-item">
+          <text class="profile-label">年龄</text>
+          <text class="profile-value">{{age}}</text>
+        </view>
+        <view class="profile-item">
+          <text class="profile-label">身高</text>
+          <text class="profile-value">{{height}} cm</text>
+        </view>
+        <view class="profile-item">
+          <text class="profile-label">体重</text>
+          <text class="profile-value">{{weight}} kg</text>
+        </view>
+        <view class="profile-item bmi-highlight">
+          <text class="profile-label">BMI</text>
+          <text class="profile-value bmi-num">{{bmi}}</text>
+        </view>
+      </view>
+    </block>
+
+    <block wx:else>
+      <view class="profile-edit-form">
+        <view class="form-row">
+          <text class="form-label">性别</text>
+          <view class="gender-toggle">
+            <view class="gender-option {{tempGender === 0 ? 'active' : ''}}" bindtap="onGenderSwitch" data-gender="0">男</view>
+            <view class="gender-option {{tempGender === 1 ? 'active' : ''}}" bindtap="onGenderSwitch" data-gender="1">女</view>
+          </view>
+        </view>
+        <view class="form-row">
+          <text class="form-label">年龄</text>
+          <input class="form-input" type="number" value="{{tempAge}}" bindinput="onAgeInput" placeholder="30" />
+          <text class="form-unit">岁</text>
+        </view>
+        <view class="form-row">
+          <text class="form-label">身高</text>
+          <input class="form-input" type="digit" value="{{tempHeight}}" bindinput="onHeightInput" placeholder="175" />
+          <text class="form-unit">cm</text>
+        </view>
+        <view class="form-row">
+          <text class="form-label">体重</text>
+          <input class="form-input" type="digit" value="{{tempWeight}}" bindinput="onWeightInput" placeholder="70" />
+          <text class="form-unit">kg</text>
+        </view>
+        <view class="form-row bmi-preview">
+          <text class="form-label">BMI</text>
+          <text class="bmi-calc">{{tempBmi}}</text>
+        </view>
+        <view class="edit-actions">
+          <button size="mini" type="primary" bindtap="saveProfile">保存</button>
+          <button size="mini" bindtap="cancelEditProfile">取消</button>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <!-- 3. AI 诊断入口 -->
+  <view class="ai-section">
+    <view class="ai-card" bindtap="getAiDiagnosis">
+      <view class="ai-icon-box">✨</view>
+      <view class="ai-info">
+        <text class="ai-card-title">AI 康复趋势分析</text>
+        <text class="ai-card-desc">对比近期数据，评估好转情况</text>
+      </view>
+      <view class="ai-arrow-btn">深度评价</view>
+    </view>
+  </view>
+
+  <!-- 3. 历史记录列表 -->
+  <view class="list-header">
+    <text class="title">我的健康历程</text>
+    <text class="subtitle">共 {{records.length}} 次记录</text>
+  </view>
+
+  <scroll-view scroll-y class="record-list">
+    <view wx:if="{{records.length === 0 && !loading}}" class="empty-state">
+      <icon type="info" size="50" color="#ddd"></icon>
+      <text>暂无运动数据</text>
+    </view>
+
+    <!-- 循环卡片：现在带有姿态可视化 -->
+    <view wx:for="{{records}}" wx:key="_id" class="record-item">
+      <view class="item-left">
+        <view class="mode-tag {{item.mode === 'sport' ? 'tag-sport' : 'tag-rehab'}}">{{item.mode === 'sport' ? '锻炼' : '康复'}}</view>
+        <view class="date-text">{{item.dateDisplay}}</view>
+        
+        <!-- 数据展示 -->
+        <view class="data-grid">
+          <view class="data-cell"><text class="l">肌电</text><text class="v">{{item.maxEmg}}</text></view>
+          <view class="data-cell"><text class="l">角度</text><text class="v">{{item.visionAngle}}°</text></view>
+          <view class="data-cell"><text class="l">心率</text><text class="v">{{item.avgBpm}}</text></view>
+        </view>
+      </view>
+
+      <!-- 【核心：姿态快照区】用 CSS 模拟保存时的姿态线条 -->
+      <view class="posture-snapshot">
+        <view class="arm-base">
+          <!-- 大臂 -->
+          <view class="bone upper-arm" style="transform: rotate({{item.visionAngle - 180}}deg);"></view>
+          <!-- 小臂 (基于大臂角度做微调) -->
+          <view class="bone lower-arm" style="transform: rotate({{item.visionAngle - 150}}deg);"></view>
+          <view class="joint"></view>
+        </view>
+        <text class="snapshot-label">姿态快照</text>
+      </view>
+    </view>
+  </scroll-view>
+
+</view>
+
+<!-- 5. AI 诊断弹窗 -->
+<view class="ai-modal-mask" wx:if="{{showAiResult}}" bindtap="closeAiModal">
+  <view class="ai-modal-content" catchtap="stop">
+    <view class="ai-modal-header">🤖 AI 医生深度评价报告</view>
+    <scroll-view scroll-y class="ai-modal-body">
+      <view class="diagnosis-tag">康复趋势</view>
+      <text class="ai-result-text">{{aiResultText}}</text>
+    </scroll-view>
+    <button class="ai-modal-btn" bindtap="closeAiModal">收到建议</button>
+  </view>
+</view>

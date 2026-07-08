@@ -1,0 +1,9 @@
+{
+  "name": "joinDoctor",
+  "version": "1.0.0",
+  "description": "Patient binds to doctor via invite code",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

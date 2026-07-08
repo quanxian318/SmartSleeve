@@ -1,0 +1,286 @@
+<view class="container">
+
+  <!-- ==================== 医生 ==================== -->
+  <block wx:if="{{role === 'doctor'}}">
+    <view class="invite-code-card">
+      <view class="invite-header">
+        <text class="invite-label">我的邀请码</text>
+        <text class="invite-code-num">{{inviteCode}}</text>
+      </view>
+      <view class="invite-actions">
+        <button class="invite-btn copy-btn" bindtap="copyInviteCode">复制</button>
+        <button class="invite-btn share-btn" open-type="share">分享</button>
+      </view>
+    </view>
+
+    <view class="doctor-stats">
+      <view class="stat-item"><text class="stat-num">{{patientCount}}</text><text class="stat-label">管理患者</text></view>
+    </view>
+
+    <view class="section-header">
+      <text class="section-title">我的患者</text>
+      <button class="refresh-btn" size="mini" bindtap="fetchPatients">刷新</button>
+    </view>
+
+    <scroll-view scroll-y class="patient-scroll" wx:if="{{patientList.length > 0}}">
+      <view wx:for="{{patientList}}" wx:key="_openid" class="patient-card" bindtap="openPatientDetail" data-patientid="{{item._openid}}" data-patientname="{{item.customName}}">
+        <view class="p-card-left">
+          <view class="p-avatar">{{item.customName ? item.customName.charAt(0) : 'P'}}</view>
+          <view class="p-online-dot {{item.isOnline ? 'online' : 'offline'}}"></view>
+        </view>
+        <view class="p-card-mid">
+          <view class="p-name">{{item.customName || '患者'}}</view>
+          <view wx:if="{{item.latestRecord}}" class="p-data-row">
+            <text class="p-data">角度: {{item.latestRecord.visionAngle}}°</text>
+            <text class="p-data">心率: {{item.latestRecord.avgBpm}} BPM</text>
+          </view>
+          <view wx:else class="p-no-data">暂无训练数据</view>
+        </view>
+        <view class="p-card-right">
+          <view class="p-arrow">›</view>
+          <view wx:if="{{item.pendingTasks > 0}}" class="p-badge">{{item.pendingTasks}}</view>
+        </view>
+      </view>
+    </scroll-view>
+
+    <view wx:else class="empty-patients">
+      <text class="empty-icon">📋</text>
+      <text class="empty-text">暂无患者</text>
+      <text class="empty-hint">分享邀请码给患者，绑定后即出现在这里</text>
+    </view>
+
+    <view class="fab" bindtap="onFabTap">＋</view>
+  </block>
+
+  <!-- ==================== 患者 ==================== -->
+  <block wx:elif="{{role === 'patient'}}">
+
+    <!-- Tab 切换 -->
+    <view class="patient-tab-bar">
+      <view class="patient-tab {{patientTab === 'monitor' ? 'active' : ''}}" bindtap="switchPatientTab" data-tab="monitor">
+        <text class="patient-tab-icon">📊</text>
+        <text class="patient-tab-text">实时监控</text>
+      </view>
+      <view class="patient-tab {{patientTab === 'tasks' ? 'active' : ''}}" bindtap="switchPatientTab" data-tab="tasks">
+        <text class="patient-tab-icon">📋</text>
+        <text class="patient-tab-text">训练任务</text>
+        <view wx:if="{{patientTasks.length > 0}}" class="patient-tab-badge">{{patientTasks.length}}</view>
+      </view>
+    </view>
+
+    <!-- 活跃任务横幅（两Tab都显示） -->
+    <view wx:if="{{activeTask}}" class="active-task-banner {{activeTaskInZone ? 'in-zone' : ''}}">
+      <view class="atb-header">
+        <view class="atb-title-row">
+          <text class="atb-icon">🎯</text>
+          <text class="atb-title">{{activeTask.title}}</text>
+        </view>
+        <view class="atb-badge {{activeTaskInZone ? 'in-zone' : ''}}">
+          {{activeTaskInZone ? '✓ 目标区间' : '训练中'}}
+        </view>
+      </view>
+      <!-- 角度可视化 -->
+      <view class="atb-angle-track">
+        <view class="atb-track-bg">
+          <view class="atb-target-zone" style="left: {{activeTask.targetAngleMin / 180 * 100}}%; width: {{(activeTask.targetAngleMax - activeTask.targetAngleMin) / 180 * 100}}%;"></view>
+          <view class="atb-current-dot {{activeTaskInZone ? 'pulse' : ''}}" style="left: {{rdkAngle / 180 * 100}}%;"></view>
+        </view>
+        <view class="atb-track-labels">
+          <text>0°</text><text>90°</text><text>180°</text>
+        </view>
+      </view>
+      <!-- 进度数据行 -->
+      <view class="atb-stats">
+        <view class="atb-stat">
+          <text class="atb-stat-val">{{activeTaskReps}}/{{activeTask.repetitions}}</text>
+          <text class="atb-stat-lbl">次数</text>
+        </view>
+        <view class="atb-stat">
+          <text class="atb-stat-val">{{activeTask.targetAngleMin}}°-{{activeTask.targetAngleMax}}°</text>
+          <text class="atb-stat-lbl">目标角度</text>
+        </view>
+        <view class="atb-stat">
+          <text class="atb-stat-val">{{rdkAngle}}°</text>
+          <text class="atb-stat-lbl">当前角度</text>
+        </view>
+      </view>
+      <view class="atb-actions">
+        <button class="atb-btn-detail" size="mini" bindtap="openPatientTask" data-taskid="{{activeTask._id}}">查看详情</button>
+      </view>
+    </view>
+
+    <!-- ===== 监控Tab ===== -->
+    <view wx:if="{{patientTab === 'monitor'}}" class="header">
+      <view class="status-bar {{connected ? 'online' : 'offline'}}">
+        <view class="dot"></view>
+        <text>状态: {{connected ? (mockTimer ? '演示模式中' : '真实测量中') : '等待连接'}}</text>
+      </view>
+
+      <view class="rdk-connect-box">
+        <view class="rdk-input-row">
+          <input class="rdk-input" placeholder="RDK IP: 192.168.43.225" bindinput="inputIP" value="{{rdkIP}}"/>
+          <button size="mini" class="rdk-btn" bindtap="connectRDK">同步视觉端</button>
+        </view>
+        <view class="rdk-status-bar">视觉流: <text class="{{rdkStatus === '已连接' ? 'txt-success' : 'txt-error'}}">{{rdkStatus}}</text> | 角度: <text class="txt-bold">{{rdkAngle}}°</text></view>
+        <view class="vision-detail-box">
+          <view class="vision-row"><text>左肘角度：</text><text class="txt-bold">{{leftElbowAngle}}°</text></view>
+          <view class="vision-row"><text>右肘角度：</text><text class="txt-bold">{{rightElbowAngle}}°</text></view>
+          <view class="vision-row"><text>左大臂角度：</text><text class="txt-bold">{{leftUpperAngle}}°</text></view>
+          <view class="vision-row"><text>右大臂角度：</text><text class="txt-bold">{{rightUpperAngle}}°</text></view>
+        </view>
+      </view>
+
+      <view class="btn-group" wx:if="{{!connected}}">
+        <button class="btn-primary" bindtap="connectBluetooth">开启真实测量</button>
+        <button class="btn-mock" bindtap="startMockData">演示模式</button>
+      </view>
+      <view class="btn-group" wx:else>
+        <button class="btn-reset" bindtap="resetConnection">停止测量</button>
+      </view>
+    </view>
+
+    <!-- ===== 监控Tab内容 ===== -->
+    <block wx:if="{{patientTab === 'monitor'}}">
+      <!-- AI 状态条（紧凑） -->
+      <view class="ai-compact {{aiStatus}}">
+        <icon type="{{aiStatus === 'danger' ? 'clear' : (aiStatus === 'warn' ? 'warn' : 'success')}}" size="22" color="{{aiIconColor}}"></icon>
+        <text class="ai-compact-msg">{{aiTitle}}</text>
+        <text class="ai-compact-score">{{aiScore}}分</text>
+      </view>
+
+      <!-- 两项指标卡片 -->
+      <view class="vitals-grid">
+        <view class="vital-card vital-wide {{bpm > 115 ? 'danger' : ''}}">
+          <text class="vital-icon">❤️</text>
+          <view class="vital-num">{{bpm}}<text class="vital-unit">BPM</text></view>
+          <text class="vital-label">心率</text>
+          <view class="vital-chart-btn" bindtap="openHeartChart">📈 波形</view>
+        </view>
+        <view class="vital-card vital-wide">
+          <text class="vital-icon">💪</text>
+          <view class="vital-num">{{emg}}<text class="vital-unit">μV</text></view>
+          <text class="vital-label">肌电</text>
+          <view class="vital-chart-btn" bindtap="openEmgChart">📈 波形</view>
+        </view>
+      </view>
+
+      <!-- 心率波形弹窗 -->
+      <view class="chart-overlay" wx:if="{{showHeartChart}}" catchtap="closeHeartChart">
+        <view class="chart-modal" catchtap="stopProp">
+          <view class="chart-header">
+            <text class="chart-title">❤️ 心率波形 (最近30秒)</text>
+            <text class="chart-close" bindtap="closeHeartChart">✕</text>
+          </view>
+          <canvas type="2d" id="heartChartCanvas" class="chart-canvas"></canvas>
+        </view>
+      </view>
+
+      <!-- 肌电波形弹窗 -->
+      <view class="chart-overlay" wx:if="{{showEmgChart}}" catchtap="closeEmgChart">
+        <view class="chart-modal" catchtap="stopProp">
+          <view class="chart-header">
+            <view class="chart-muscle-tabs">
+              <view class="muscle-tab {{emgChartMuscle === 'biceps' ? 'active' : ''}}" bindtap="switchEmgMuscle" data-muscle="biceps">肱二头肌</view>
+              <view class="muscle-tab {{emgChartMuscle === 'triceps' ? 'active' : ''}}" bindtap="switchEmgMuscle" data-muscle="triceps">肱三头肌</view>
+              <view class="muscle-tab {{emgChartMuscle === 'brachioradialis' ? 'active' : ''}}" bindtap="switchEmgMuscle" data-muscle="brachioradialis">肱桡肌</view>
+            </view>
+            <text class="chart-close" bindtap="closeEmgChart">✕</text>
+          </view>
+          <view class="chart-legend">
+            <view class="legend-line pred"></view><text>预测EMG</text>
+            <view class="legend-line real"></view><text>实测EMG</text>
+          </view>
+          <canvas type="2d" id="emgChartCanvas" class="chart-canvas"></canvas>
+        </view>
+      </view>
+
+      <!-- EMG 强度条（紧凑） -->
+      <view class="emg-compact">
+        <view class="emg-compact-head">
+          <text>肌肉激活强度</text>
+          <text style="color:{{emgPercent > 70 ? '#e74c3c' : '#0984e3'}}">{{emgPercent}}%</text>
+        </view>
+        <view class="emg-compact-track">
+          <view class="emg-compact-fill" style="width:{{emgPercent}}%"></view>
+        </view>
+      </view>
+
+      <!-- 肌肉代偿 + 电极质量 -->
+      <view class="quality-grid">
+        <view class="quality-card {{compLevelClass}}">
+          <view class="qc-header">
+            <text class="qc-icon">💪</text>
+            <text class="qc-title">肌肉代偿</text>
+          </view>
+          <view class="qc-score">{{compScore}}<text class="qc-unit">分</text></view>
+          <view class="qc-label">{{compLabel}}</view>
+        </view>
+        <view class="quality-card {{elecBClass}}">
+          <view class="qc-header">
+            <text class="qc-icon">🔌</text>
+            <text class="qc-title">电极质量</text>
+          </view>
+          <view class="qc-electrodes">
+            <view class="qc-elec-row">
+              <text class="qc-elec-name">二头肌</text>
+              <view class="qc-elec-bar-bg">
+                <view class="qc-elec-bar {{elecBClass}}" style="width:{{bicepsQuality}}%"></view>
+              </view>
+              <text class="qc-elec-val">{{bicepsQuality}}</text>
+            </view>
+            <view class="qc-elec-row">
+              <text class="qc-elec-name">三头肌</text>
+              <view class="qc-elec-bar-bg">
+                <view class="qc-elec-bar {{elecTClass}}" style="width:{{tricepsQuality}}%"></view>
+              </view>
+              <text class="qc-elec-val">{{tricepsQuality}}</text>
+            </view>
+          </view>
+          <view wx:if="{{dropoutB || dropoutT}}" class="qc-dropout-alert">⚠️ 电极脱落</view>
+        </view>
+      </view>
+
+      <view class="footer" wx:if="{{connected}}">
+        <button class="save-btn" bindtap="onSaveRecord">存入健康档案</button>
+      </view>
+    </block>
+
+    <!-- ===== 任务Tab内容 ===== -->
+    <view wx:if="{{patientTab === 'tasks'}}">
+      <view class="patient-tasks-section">
+        <view class="pt-header">
+          <text class="pt-title">我的训练任务</text>
+          <text class="pt-count">共 {{patientTasks.length}} 个</text>
+        </view>
+        <view wx:for="{{patientTasks}}" wx:key="_id" class="pt-card" bindtap="openPatientTask" data-taskid="{{item._id}}">
+          <view class="pt-card-left">
+            <text class="pt-card-title">{{item.title}}</text>
+            <view class="pt-card-meta">
+              <text class="pt-meta-tag">{{item.targetAngleMin}}° - {{item.targetAngleMax}}°</text>
+              <text class="pt-meta-tag">{{item.repetitions}}次</text>
+            </view>
+          </view>
+          <view class="pt-card-right">
+            <view class="pt-status {{item.status}} {{item.isOverdue ? 'overdue' : ''}}">
+              {{item.status === 'pending' ? (item.isOverdue ? '已逾期' : '待完成') : '已完成'}}
+            </view>
+            <text class="pt-deadline {{item.isOverdue ? 'overdue-text' : ''}}">{{item.deadlineText}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 空任务状态 -->
+      <view wx:if="{{patientTasks.length === 0}}" class="empty-tasks">
+        <text class="empty-tasks-icon">📋</text>
+        <text class="empty-tasks-title">暂无训练任务</text>
+        <text class="empty-tasks-hint">医生尚未分配训练任务给您</text>
+      </view>
+    </view>
+  </block>
+
+  <!-- ==================== 加载中 ==================== -->
+  <block wx:else>
+    <view class="loading-role"><view class="loading-spinner"></view><text class="loading-text">加载中...</text></view>
+  </block>
+
+</view>

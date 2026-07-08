@@ -1,0 +1,67 @@
+<view class="page">
+  <view class="ar-header">
+    <text class="ar-title">标准动作采集</text>
+    <text class="ar-sub">录制标准动作模板，用于患者训练对比评分</text>
+  </view>
+
+  <!-- 动作选择 -->
+  <view class="ar-section" wx:if="{{!recording && !recorded}}">
+    <text class="ar-section-title">选择动作类型</text>
+    <view class="ar-action-grid">
+      <view wx:for="{{actionTypes}}" wx:key="key"
+        class="ar-action-card {{selectedAction === item.key ? 'selected' : ''}}"
+        bindtap="selectAction" data-key="{{item.key}}">
+        <text class="ar-action-icon">{{item.icon}}</text>
+        <text class="ar-action-name">{{item.name}}</text>
+        <text class="ar-action-desc">{{item.desc}}</text>
+        <view wx:if="{{selectedAction === item.key}}" class="ar-check">✓</view>
+      </view>
+    </view>
+
+    <view wx:if="{{selectedAction === 'custom'}}" class="ar-custom-name">
+      <input class="ar-name-input" placeholder="输入动作名称" value="{{customName}}" bindinput="onCustomName" maxlength="20"/>
+    </view>
+  </view>
+
+  <!-- 录制中 -->
+  <view wx:if="{{recording}}" class="ar-recording-panel">
+    <view class="ar-rec-indicator">
+      <view class="ar-rec-dot"></view>
+      <text>录制中... {{recordingTime}}/{{recordingMax}}秒</text>
+    </view>
+
+    <view class="ar-rec-data">
+      <view class="ar-rec-item">
+        <text class="ar-rec-val">{{recAngle}}°</text>
+        <text class="ar-rec-lbl">当前角度</text>
+      </view>
+      <view class="ar-rec-item">
+        <text class="ar-rec-val">{{recEmg}}</text>
+        <text class="ar-rec-lbl">肌电 μV</text>
+      </view>
+      <view class="ar-rec-item">
+        <text class="ar-rec-val">{{recBpm}}</text>
+        <text class="ar-rec-lbl">心率</text>
+      </view>
+    </view>
+
+    <view class="ar-rec-hint">请在录制期间完成一次完整的标准动作</view>
+  </view>
+
+  <!-- 录制完成 -->
+  <view wx:if="{{recorded}}" class="ar-result-panel">
+    <view class="ar-result-icon">✅</view>
+    <text class="ar-result-title">录制完成</text>
+    <text class="ar-result-summary">{{recordSummary}}</text>
+
+    <view class="ar-result-actions">
+      <button class="ar-btn-save" bindtap="saveTemplate" loading="{{saving}}">💾 保存为标准模板</button>
+      <button class="ar-btn-retry" bindtap="reRecord">🔄 重新录制</button>
+    </view>
+  </view>
+
+  <!-- 开始录制按钮 -->
+  <view wx:if="{{!recording && !recorded}}" class="ar-start-area">
+    <button class="ar-btn-start" bindtap="startRecord">🔴 开始录制 (3秒)</button>
+  </view>
+</view>

@@ -106,7 +106,7 @@ Smart_Sleeve/
 
 ## 系统架构
 
-硬件层: ESP32 + 银织物电极 -> 肌电采集 -> BLE 广播
+硬件层: 5V电源 -> 自研扩展板 -> ESP32 + 银织物电极 -> 肌电采集 -> BLE 广播
         RDK X5 + USB摄像头 -> 骨骼跟踪 -> BPU 推理
         MX1508 电机驱动 x8 -> 振动触觉反馈
 
@@ -185,10 +185,23 @@ hb_mapper makertbin --model-type onnx --fast-perf --model anchorcalib_tcn_bpu_v2
 
 | 组件 | 连接 |
 |------|------|
-| PPG 脉搏传感器 | GND, SIG=A0, 5V |
-| EMG 电极 (银织物) | 3.5mm TRS -> AD8221+TL074 -> ADC |
-| MX1508 电机驱动 | GPIO 控制, 8 通道 |
-| 电源 | +/-9V 双电池 (EMG), 5V (ESP32) |
+| 电源 | 5V DC 接入自研扩展板，板载升压/分压电路供电 |
+| PPG 脉搏传感器 | GND, SIG=A0, 5V (扩展板引出) |
+| EMG 电极 (银织物) | 3.5mm TRS → AD8221+TL074 仪表放大电路 |
+| MX1508 电机驱动 | GPIO 控制, 8 通道 (扩展板集成) |
+| RDK X5 | USB 连接摄像头, 串口通信 |
+
+---
+
+## 环境要求
+
+| 组件 | 要求 |
+|------|------|
+| RDK X5 | Ubuntu 22.04 ARM64, hobot-dnn >= 3.0, ROS2 Humble |
+| 训练服务器 | Python 3.10+, PyTorch 2.x, CUDA 12+ |
+| BPU 编译 | Ubuntu 20.04, Python 3.8, 地平线 J5 OE v1.1.77+ |
+| ESP32 | Arduino Nano ESP32, PulseSensor Playground |
+| 微信小程序 | 微信开发者工具, threejs-miniprogram v0.0.8 |
 
 ---
 

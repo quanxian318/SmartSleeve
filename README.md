@@ -118,6 +118,7 @@ All on-device runtime scripts, ROS2 nodes, inference wrappers, the voice assista
 | `ws_server.py` | 7 KB | ROS2 → WebSocket bridge, exposes `ws://0.0.0.0:8765` for the Mini Program |
 | `voice_demo_v7.py` | 82 KB | **Voice assistant v7**: VAD/push-to-talk modes, offline Whisper ASR, keyword+LLM intent, priority TTS, training state machine, background alert monitor (see [Voice Interaction Subsystem](#voice-interaction-subsystem)) |
 | `voice_demo_v6.py` | 38 KB | Voice assistant v6 (legacy, kept for reference) |
+| `voice_llm.py` | 8.5 KB | DeepSeek API client (AI chat + training summaries); **contains no key** — reads the API key at runtime only from `DEEPSEEK_API_KEY` or `~/.deepseek_key`, degrades silently on network errors |
 | `voice_agent_tts.py` | **empty** | TTS module (0-byte placeholder; the actual TTS logic is inlined in v7) |
 | `scripts/emg-system.service` | 987 B | systemd unit for auto-start on boot |
 | `motion_scaler_63subj.pkl` | 823 B | Motion-feature StandardScaler (fit on the 63-subject dataset) |
@@ -330,7 +331,7 @@ DeepSeek API key (optional, for AI chat & rehab summaries):
 echo 'sk-your-api-key' > ~/.deepseek_key
 ```
 
-> Note: AI chat depends on `voice_llm.py` (the DeepSeek client), which is **not** currently committed to this repo. Without it, v7 gracefully falls back to keyword + echo mode; all other features are unaffected.
+> Note: AI chat is provided by `voice_llm.py` (the DeepSeek client), now committed to the repo. **The file contains no key** — the API key is read at runtime only from `DEEPSEEK_API_KEY` or the `~/.deepseek_key` file (which is not in the repo; do not commit it). Without a key, v7 gracefully falls back to keyword + echo mode; all other features are unaffected.
 
 ---
 

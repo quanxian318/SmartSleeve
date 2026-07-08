@@ -9,8 +9,17 @@
 ## 目录
 
 - [系统架构](#系统架构)
-- [项目结构](#项目结构)
+- [双模型交叉验证](#双模型交叉验证)
 - [模型信息](#模型信息)
+- [目录与文件详解](#目录与文件详解)
+  - [根目录](#根目录)
+  - [1_RDK_X5_System — RDK X5 板端部署 + 语音助手](#1_rdk_x5_system--rdk-x5-板端部署--语音助手)
+  - [2_EMG_Model — 肌电预测模型](#2_emg_model--肌电预测模型)
+  - [3_Quantization — 量化分析工具](#3_quantization--量化分析工具)
+  - [4_ESP32_Firmware — ESP32 固件](#4_esp32_firmware--esp32-固件)
+  - [5_Mini_Program — 微信小程序](#5_mini_program--微信小程序)
+  - [6_PCB — 硬件设计](#6_pcb--硬件设计)
+  - [7_3D_Models — 3D 手臂模型](#7_3d_models--3d-手臂模型)
 - [语音交互子系统](#语音交互子系统)
 - [快速开始](#快速开始)
 - [硬件引脚](#硬件引脚)
@@ -40,110 +49,9 @@
 └──────────────────────────────────────────────────────────────┘
 ```
 
-**双模型交叉验证**：小程序端跑轻量 RandomForest 做实时 3D 渲染；RDK X5 端跑更大的 TCN 模型并配合摄像头骨架追踪作为 Ground Truth，交叉校验「预测 EMG」与「BLE 实测 EMG」，实现精度修正。
+## 双模型交叉验证
 
----
-
-## 项目结构
-
-```
-SmartSleeve/
-├── README.md                          # 英文说明（默认）
-├── README_cn.md                       # 本文件（中文说明）
-│
-├── 1_RDK_X5_System/                   # RDK X5 板端部署 + 语音助手
-│   ├── start_all.sh                   # 一键启动脚本（骨架/EMG/验证/语音/WebSocket）
-│   ├── ros2_emg_bridge.py             # EMG 推理桥接（ROS2 节点）
-│   ├── ros2_emg_bridge_v2.py          # EMG 桥接 v2（ML 预测 + 校准加载）
-│   ├── tcn_bpu_predictor.py           # BPU 推理封装（替代 onnxruntime）
-│   ├── body_angle_node.py             # 人体骨骼角度检测（ROS2）
-│   ├── emg_cross_validation_v2.py     # 交叉验证 + 肌肉代偿/电极质量检测
-│   ├── udp_emg_receiver.py            # UDP EMG/心率接收器
-│   ├── screen_server.py               # HTTP/WebSocket 数据服务
-│   ├── ws_server.py                   # ROS2 → WebSocket 桥接
-│   ├── emg_deploy.py                  # 独立推理脚本
-│   ├── voice_demo_v7.py               # 语音助手 v7（VAD/按键 + 训练控制 + LLM）
-│   ├── voice_demo_v6.py               # 语音助手 v6（历史版本）
-│   ├── voice_agent_tts.py             # TTS 语音合成模块
-│   ├── scripts/emg-system.service     # systemd 开机自启服务
-│   ├── motion_scaler_63subj.pkl       # 运动特征 StandardScaler
-│   ├── calib_scaler_63subj.pkl        # 校准向量 StandardScaler
-│   ├── calibration_config_63subj.json # 校准配置
-│   └── anchorcalib_tcn_bpu_v2.bin     # BPU 编译模型（bayes-e）
-│
-├── 2_EMG_Model/                       # 肌电预测模型
-│   ├── training/                      # 训练脚本 + 权重
-│   │   ├── model.py                   # 原始 PyTorch 模型（Conv1d）
-│   │   ├── model_bpu.py               # BPU 原生模型（Conv2d）
-│   │   ├── train.py                   # LOSO 交叉验证训练
-│   │   ├── losses.py                  # 组合损失函数
-│   │   ├── cache_data.py              # 数据缓存
-│   │   ├── export_bpu_v2.py           # ONNX opset=11 导出
-│   │   ├── export_bpu.py              # 原始 BPU ONNX 导出
-│   │   ├── migrate_weights.py         # Conv1d → Conv2d 权重迁移
-│   │   ├── adapt_zenodo.py            # Zenodo 数据集适配
-│   │   ├── adapt_lucchetti.py         # Lucchetti 数据集适配
-│   │   ├── anchorcalib_tcn.pt         # 10 人模型权重
-│   │   ├── anchorcalib_tcn_63subj.pt  # 63 人模型权重
-│   │   └── anchorcalib_tcn_bpu_v2.pt  # BPU 迁移后权重
-│   ├── deployed/                      # 部署用模型
-│   │   ├── anchorcalib_tcn_bpu_v2.onnx  # BPU-ready ONNX（8.6 MB，opset=11）
-│   │   └── anchorcalib_tcn_bpu_v2.bin   # BPU 编译模型（2.5 MB）
-│   └── report.html                    # BPU 部署精度/性能报告
-│
-├── 3_Quantization/                    # 量化分析工具
-│   ├── quant_analysis.py              # INT8 量化精度分析
-│   ├── operator_level_quant.py        # 底层算子级量化
-│   ├── onnx_node_analysis.py          # ONNX 算子级分析
-│   ├── compare_models.py              # 三模型对比
-│   └── gen_figures.py                 # 图表生成
-│
-├── 4_ESP32_Firmware/                  # ESP32 固件
-│   ├── PulseSensorAmped_Arduino_1dot2.ino  # 主程序（BLE + PWM + ADC）
-│   ├── BLE_Manager.ino                # 蓝牙心率 + 肌电服务
-│   ├── WiFi_Manager.ino               # WiFi 管理（预留）
-│   ├── Interrupt.ino                  # 定时中断（脉搏检测 ISR）
-│   └── ABX00083-datasheet.pdf         # Arduino Nano ESP32 数据手册
-│
-├── 5_Mini_Program/                    # 微信小程序
-│   ├── app.js / app.json / app.wxss   # 入口 + 全局配置
-│   ├── project.config.json            # 项目配置
-│   ├── utils/
-│   │   ├── dataManager.js             # 全局传感器数据单例（WebSocket + BLE）
-│   │   ├── rfInference.js             # RandomForest JS 推理引擎
-│   │   ├── roleManager.js             # 医生/患者角色管理
-│   │   └── scorer.js                  # 训练评分
-│   ├── pages/
-│   │   ├── index/                     # 首页（蓝牙连接 + 实时监控）
-│   │   ├── digitalTwin/               # 3D 数字孪生
-│   │   ├── history/                   # 个人中心 / 健康档案
-│   │   ├── roleSelect/                # 角色选择
-│   │   ├── taskDetail/                # 训练任务详情
-│   │   ├── taskPublish/               # 发布任务（医生）
-│   │   ├── patientDetail/             # 患者详情（医生）
-│   │   └── actionRecord/              # 标准动作录制（医生）
-│   └── cloudfunctions/                # 云函数
-│       ├── setUserRole/               # 用户角色
-│       ├── joinDoctor/                # 患者邀请码绑定
-│       ├── joinDoctorByQR/            # 患者扫码绑定
-│       ├── manageTask/                # 任务 CRUD
-│       ├── fetchMyTasks/              # 获取任务
-│       ├── actionTemplates/           # 动作模板
-│       ├── getDoctorPatients/         # 医生患者列表
-│       └── getAiReport/               # AI 康复报告
-│
-├── 6_PCB/                             # 硬件设计
-│   └── Altium_SmartSleeve1.zip        # 扩展板 PCB（Altium）
-│
-└── 7_3D_Models/                       # 3D 手臂模型
-    ├── arm_model.glb                  # 完整模型（2.8 MB）
-    ├── arm_model_clean.glb            # 清理版（2.7 MB）
-    ├── arm_model_r108.glb             # Three.js r108 兼容版（1.5 MB）
-    ├── arm_model_compressed.glb       # 压缩版（0.6 MB）
-    ├── arm_skinned.glb                # 骨骼蒙皮版（4.3 MB）
-    ├── GLTFLoader_raw.js              # GLTF 加载器源码
-    └── add_armature.py                # Blender 骨架导出脚本
-```
+小程序端跑轻量 RandomForest 做实时 3D 渲染；RDK X5 端跑更大的 TCN 模型并配合摄像头骨架追踪作为 Ground Truth，交叉校验「预测 EMG」与「BLE 实测 EMG」，实现精度修正。
 
 ---
 
@@ -174,6 +82,210 @@ SmartSleeve/
 | Pearson r | 0.9648 |
 | MAE | 0.2105 |
 | RMSE | 0.3356 |
+
+---
+
+## 目录与文件详解
+
+> 下表覆盖仓库内**每一个文件**。标注「空」的文件为 0 字节占位，功能尚未提交。
+
+### 根目录
+
+| 文件 | 大小 | 说明 |
+|------|------|------|
+| `README.md` | 8.7 KB | 英文说明（默认首页） |
+| `README_cn.md` | — | 本文件，中文详细说明 |
+| `.gitignore` | 389 B | Git 忽略规则（模型缓存、临时文件等） |
+
+### 1_RDK_X5_System — RDK X5 板端部署 + 语音助手
+
+板端所有运行时脚本、ROS2 节点、推理封装、语音助手与模型资源。
+
+| 文件 | 大小 | 说明 |
+|------|------|------|
+| `start_all.sh` | 16 KB | 一键启动脚本：拉起骨架追踪 / EMG 桥接 / 交叉验证 / 语音助手 / WebSocket 全部节点，退出时自动清理子进程 |
+| `body_angle_node.py` | 15 KB | 人体骨骼角度检测 ROS2 节点，摄像头 → AI 人体检测 → 发布 `/body_arm_angles` |
+| `ros2_emg_bridge.py` | 14 KB | EMG 推理桥接 ROS2 节点（初版），角度 → TCN → 发布 `/virtual_emg` |
+| `ros2_emg_bridge_v2.py` | 15 KB | EMG 桥接 v2，支持 `--ml_predict` 与 `--load_calib` 校准加载 |
+| `tcn_bpu_predictor.py` | 6 KB | BPU 推理封装，替代 onnxruntime，加载 `.bin` 模型做硬件加速推理 |
+| `emg_cross_validation_v2.py` | 26 KB | 交叉验证：TCN 预测 vs 真实 EMG，附肌肉代偿 / 电极质量检测，发布 `/emg_validation` + `/emg_alerts` |
+| `emg_deploy.py` | 4.5 KB | 独立推理脚本（脱离 ROS2 单跑，用于快速验证模型） |
+| `udp_emg_receiver.py` | **空** | UDP EMG / 心率接收器（0 字节占位，待实现） |
+| `screen_server.py` | 19 KB | 板载屏幕 HTTP/WebSocket 数据服务（本地可视化 UI） |
+| `ws_server.py` | 7 KB | ROS2 → WebSocket 桥接，对外暴露 `ws://0.0.0.0:8765` 供小程序连接 |
+| `voice_demo_v7.py` | 82 KB | **语音助手 v7**：VAD/按键双模式、Whisper 离线识别、关键词+LLM 意图、优先级 TTS、训练状态机、后台告警巡检（详见[语音交互子系统](#语音交互子系统)） |
+| `voice_demo_v6.py` | 38 KB | 语音助手 v6（历史版本，保留参考） |
+| `voice_agent_tts.py` | **空** | TTS 语音合成模块（0 字节占位，实际 TTS 逻辑已内联在 v7 中） |
+| `scripts/emg-system.service` | 987 B | systemd 开机自启服务单元 |
+| `motion_scaler_63subj.pkl` | 823 B | 运动特征 StandardScaler（63 人数据集拟合） |
+| `calib_scaler_63subj.pkl` | 967 B | 校准向量 StandardScaler |
+| `calibration_config_63subj.json` | 730 B | 校准配置（默认校准向量、通道定义等） |
+| `anchorcalib_tcn_bpu_v2.bin` | 2.4 MB | BPU 编译后模型（bayes-e 架构，板端实际加载） |
+
+### 2_EMG_Model — 肌电预测模型
+
+深度学习模型的训练脚本、权重与部署产物。
+
+**`training/` — 训练脚本 + 权重**
+
+| 文件 | 大小 | 说明 |
+|------|------|------|
+| `model.py` | 11 KB | 原始 PyTorch 模型定义（Conv1d 版 TCN + MLP 融合） |
+| `model_bpu.py` | 8.5 KB | BPU 原生模型（Conv2d 版，适配地平线算子约束） |
+| `train.py` | 47 KB | LOSO（Leave-One-Subject-Out）交叉验证训练主脚本 |
+| `losses.py` | 2.3 KB | 组合损失函数（MSE + 相关性 + 平滑项等） |
+| `cache_data.py` | 535 B | 数据预处理与缓存 |
+| `export_bpu.py` | 15 KB | 原始 BPU ONNX 导出 |
+| `export_bpu_v2.py` | 6.4 KB | ONNX opset=11 导出（当前部署使用） |
+| `migrate_weights.py` | 7.6 KB | Conv1d → Conv2d 权重迁移工具 |
+| `adapt_zenodo.py` | 4.8 KB | Zenodo 公开数据集适配 |
+| `adapt_lucchetti.py` | 5.7 KB | Lucchetti 数据集适配 |
+| `anchorcalib_tcn.pt` | 8.4 MB | 10 人模型权重 |
+| `anchorcalib_tcn_63subj.pt` | 8.5 MB | 63 人模型权重（主力） |
+| `anchorcalib_tcn_bpu_v2.pt` | 8.4 MB | BPU 迁移后 Conv2d 权重 |
+| `motion_scaler_63subj.pkl` | 823 B | 运动特征标准化（与板端一致） |
+| `calib_scaler_63subj.pkl` | 967 B | 校准向量标准化（与板端一致） |
+
+**`deployed/` — 部署产物**
+
+| 文件 | 大小 | 说明 |
+|------|------|------|
+| `anchorcalib_tcn_bpu_v2.onnx` | 8.4 MB | BPU-ready ONNX（opset=11，可用 onnxruntime 直跑） |
+| `anchorcalib_tcn_bpu_v2.bin` | 2.4 MB | BPU 编译模型（`hb_mapper` 产物） |
+
+**其他**
+
+| 文件 | 大小 | 说明 |
+|------|------|------|
+| `report.html` | 6.9 KB | BPU 部署精度 / 性能报告（含量化对比图表） |
+
+### 3_Quantization — 量化分析工具
+
+INT8 量化的精度评估与算子级分析。
+
+| 文件 | 大小 | 说明 |
+|------|------|------|
+| `quant_analysis.py` | 13 KB | INT8 量化整体精度分析（余弦相似度 / R² / MAE 等） |
+| `operator_level_quant.py` | 20 KB | 底层算子级量化实验 |
+| `onnx_node_analysis.py` | 20 KB | ONNX 逐算子（node）级误差分析 |
+| `compare_models.py` | 21 KB | FP32 / ONNX / BPU 三模型输出对比 |
+| `gen_figures.py` | 37 KB | 论文/报告图表批量生成 |
+
+### 4_ESP32_Firmware — ESP32 固件
+
+Arduino Nano ESP32（ABX00083）固件，负责 BLE 广播、PWM 电机驱动与 ADC 采集。
+
+| 文件 | 大小 | 说明 |
+|------|------|------|
+| `PulseSensorAmped_Arduino_1dot2.ino` | 6.8 KB | 主程序：脉搏 ADC 采集 + PWM 电机 + 主循环 |
+| `BLE_Manager.ino` | 5.6 KB | BLE 心率服务 + 自定义肌电服务，NOTIFY 上报 |
+| `WiFi_Manager.ino` | 2.6 KB | WiFi 管理（预留，当前主用 BLE） |
+| `Interrupt.ino` | 5.4 KB | 定时器 ISR，脉搏波峰检测与 IBI 计算 |
+| `ABX00083-datasheet.pdf` | 3.3 MB | Arduino Nano ESP32 官方数据手册 |
+
+### 5_Mini_Program — 微信小程序
+
+原生微信小程序 + Three.js（r108），含患者端与医生端双角色。
+
+**入口 / 全局配置**
+
+| 文件 | 大小 | 说明 |
+|------|------|------|
+| `app.js` | 4.2 KB | 小程序入口，`globalData` 与云开发初始化 |
+| `app.json` | 1.4 KB | 全局页面路由、tabBar、窗口配置 |
+| `app.wxss` | 1.4 KB | 全局样式 |
+| `project.config.json` | 988 B | 开发者工具项目配置 |
+| `sitemap.json` | 191 B | 微信索引配置 |
+| `package.json` | 238 B | npm 依赖声明（threejs-miniprogram、pako） |
+| `package-lock.json` | 915 B | 依赖锁定 |
+
+**`utils/` — 工具函数**
+
+| 文件 | 大小 | 说明 |
+|------|------|------|
+| `dataManager.js` | 11 KB | 全局传感器数据单例：WebSocket 连接、共享状态、订阅者模式、`runInference()` 编排 |
+| `rfInference.js` | 4.7 KB | RandomForest 二进制格式解析，`predict(features)` → `[biceps, triceps]` |
+| `roleManager.js` | 4.3 KB | 医生 / 患者角色管理 |
+| `scorer.js` | 7.9 KB | 训练动作评分算法 |
+
+**`pages/` — 页面**（每个页面含 `.js / .json / .wxml / .wxss` 四件套）
+
+| 页面 | 主脚本大小 | 说明 |
+|------|------|------|
+| `index/` | 40 KB | 首页：蓝牙连接 ESP32、实时心率/肌电、2D 手臂动画、AI 诊断、RDK WebSocket 初始化 |
+| `digitalTwin/` | 35 KB | 3D 数字孪生页（详见下表） |
+| `history/` | 13 KB | 个人中心 / 健康档案，云数据库读写历史训练记录 |
+| `roleSelect/` | 1.3 KB | 首次进入选择医生 / 患者角色 |
+| `taskDetail/` | 15 KB | 训练任务详情与执行 |
+| `taskPublish/` | 5.6 KB | 医生端：发布训练任务 |
+| `patientDetail/` | 3.5 KB | 医生端：查看单个患者详情 |
+| `actionRecord/` | 6 KB | 医生端：录制标准动作模板 |
+
+**`pages/digitalTwin/` — 3D 数字孪生细分**
+
+| 文件 | 大小 | 说明 |
+|------|------|------|
+| `digitalTwin.js` | 35 KB | 页面逻辑：模型三级下载/缓存、渲染循环、ML 推理编排 |
+| `gltfLoader.js` | 80 KB | GLTF/GLB 模型加载器（适配小程序环境） |
+| `armModel.js` | 11 KB | 程序化 3D 手臂骨骼层级（shoulderPivot → 上臂 → elbowPivot → 前臂 → wristPivot） |
+| `muscleMaterials.js` | 4 KB | EMG → 颜色映射（绿→黄→橙→红） |
+| `orbitControls.js` | 5.7 KB | 触摸旋转/缩放控制 + `raycastMuscles()` 点击肌肉检测 |
+| `threeAdapter.js` | 2 KB | WebGL renderer 工厂，封装 threejs-miniprogram |
+
+**`components/navigation-bar/` — 自定义导航栏组件**
+
+| 文件 | 大小 | 说明 |
+|------|------|------|
+| `navigation-bar.js / .json / .wxml / .wxss` | — | 自定义顶部导航栏组件 |
+
+**`cloudfunctions/` — 云函数**（每个含 `config.json / index.js / package.json`）
+
+| 云函数 | 说明 |
+|--------|------|
+| `setUserRole/` | 设置用户角色（医生 / 患者） |
+| `joinDoctor/` | 患者通过邀请码绑定医生 |
+| `joinDoctorByQR/` | 患者扫二维码绑定医生 |
+| `manageTask/` | 训练任务增删改查（CRUD） |
+| `fetchMyTasks/` | 拉取当前用户任务列表 |
+| `actionTemplates/` | 标准动作模板读写 |
+| `getDoctorPatients/` | 医生查询名下患者列表 |
+| `getAiReport/` | 生成 AI 康复报告（调用大模型） |
+
+**`images/` — tab 图标**
+
+| 文件 | 说明 |
+|------|------|
+| `tab-monitor.png` / `tab-monitor-active.png` | 监控 tab 图标（常态 / 选中） |
+| `tab-twin.png` / `tab-twin-active.png` | 数字孪生 tab 图标 |
+| `tab-user.png` / `tab-user-active.png` | 个人中心 tab 图标 |
+
+**`miniprogram_npm/` — 构建后的 npm 包**
+
+| 文件 | 大小 | 说明 |
+|------|------|------|
+| `threejs-miniprogram/index.js` | 583 KB | Three.js r108 小程序版 |
+| `pako/index.js` | 224 KB | gzip 解压库（解压 `model.bin.gz`） |
+| `pako/index.js.map` | 265 KB | pako sourcemap |
+
+### 6_PCB — 硬件设计
+
+| 文件 | 大小 | 说明 |
+|------|------|------|
+| `Altium_SmartSleeve1.zip` | 1.1 MB | 自研扩展板 PCB 工程（Altium Designer，含原理图与 PCB 布局） |
+
+### 7_3D_Models — 3D 手臂模型
+
+Z-Anatomy 解剖模型的多档位版本 + Blender 脚本。
+
+| 文件 | 大小 | 说明 |
+|------|------|------|
+| `arm_skinned.glb` | 4.3 MB | 骨骼蒙皮版（最完整） |
+| `arm_model.glb` | 2.8 MB | 完整模型 |
+| `arm_model_clean.glb` | 2.7 MB | 清理版（去除冗余节点） |
+| `arm_model_r108.glb` | 1.5 MB | Three.js r108 兼容版 |
+| `arm_model_compressed.glb` | 0.6 MB | 压缩版（小程序实际加载，兼顾体积） |
+| `GLTFLoader_raw.js` | 80 KB | GLTF 加载器源码（参考） |
+| `add_armature.py` | 6 KB | Blender 骨架绑定 / 导出脚本 |
 
 ---
 
@@ -215,6 +327,8 @@ DeepSeek API Key 配置（可选，用于 AI 对话与康复总结）：
 echo 'sk-your-api-key' > ~/.deepseek_key
 ```
 
+> 注：AI 对话依赖 `voice_llm.py`（DeepSeek 客户端），该文件当前未随仓库提交；未提供时 v7 自动降级为「关键词 + 原文回显」模式，其余功能不受影响。
+
 ---
 
 ## 快速开始
@@ -254,7 +368,7 @@ hb_mapper makertbin --model-type onnx --fast-perf \
 
 1. Arduino IDE 打开 `4_ESP32_Firmware/PulseSensorAmped_Arduino_1dot2.ino`
 2. 开发板选择 `Arduino Nano ESP32 (ABX00083)`
-3. 接线：脉搏传感器 → A0，EMG#1 → A0/A1（详见硬件引脚）
+3. 接线：脉搏传感器 → A0，EMG 电极 → 仪表放大电路 → ADC
 4. 烧录后串口监视器（115200）应看到启动日志
 
 ### 5. 微信小程序

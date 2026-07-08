@@ -115,6 +115,7 @@
 | `ws_server.py` | 7 KB | ROS2 → WebSocket 桥接，对外暴露 `ws://0.0.0.0:8765` 供小程序连接 |
 | `voice_demo_v7.py` | 82 KB | **语音助手 v7**：VAD/按键双模式、Whisper 离线识别、关键词+LLM 意图、优先级 TTS、训练状态机、后台告警巡检（详见[语音交互子系统](#语音交互子系统)） |
 | `voice_demo_v6.py` | 38 KB | 语音助手 v6（历史版本，保留参考） |
+| `voice_llm.py` | 8.5 KB | DeepSeek API 客户端（AI 对话 + 训练总结）；**不含任何密钥**，仅运行时从环境变量 `DEEPSEEK_API_KEY` 或 `~/.deepseek_key` 读取，网络异常时静默降级 |
 | `voice_agent_tts.py` | **空** | TTS 语音合成模块（0 字节占位，实际 TTS 逻辑已内联在 v7 中） |
 | `scripts/emg-system.service` | 987 B | systemd 开机自启服务单元 |
 | `motion_scaler_63subj.pkl` | 823 B | 运动特征 StandardScaler（63 人数据集拟合） |
@@ -327,7 +328,7 @@ DeepSeek API Key 配置（可选，用于 AI 对话与康复总结）：
 echo 'sk-your-api-key' > ~/.deepseek_key
 ```
 
-> 注：AI 对话依赖 `voice_llm.py`（DeepSeek 客户端），该文件当前未随仓库提交；未提供时 v7 自动降级为「关键词 + 原文回显」模式，其余功能不受影响。
+> 注：AI 对话由 `voice_llm.py`（DeepSeek 客户端）提供，已随仓库提交。**该文件不含任何密钥**——API Key 仅在运行时从环境变量 `DEEPSEEK_API_KEY` 或 `~/.deepseek_key` 文件读取（`~/.deepseek_key` 不在仓库内，请勿提交）。未配置 Key 时 v7 自动降级为「关键词 + 原文回显」模式，其余功能不受影响。
 
 ---
 

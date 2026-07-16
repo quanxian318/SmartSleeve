@@ -40,7 +40,12 @@ Page({
     // 医生统计
     doctorStats: { patientCount: 0, taskCount: 0 },
     inviteCode: '',
-    showInviteCode: true
+    showInviteCode: true,
+
+    // 身份切换
+    showRoleSwitch: false,
+    switchTargetRole: '',
+    switchLoading: false
   },
 
   onLoad() {
@@ -77,7 +82,11 @@ Page({
     db.collection('users').where({ _openid: '{openid}' }).get({
       success: function (res) {
         if (res.data.length > 0) {
-          var user = { nickName: res.data[0].customName };
+          // 保留完整字段（尤其 _openid），避免其他页面用 userInfo._openid 查到空值
+          var user = {
+            _openid: res.data[0]._openid,
+            nickName: res.data[0].customName
+          };
           self.setData({ userInfo: user, loading: false });
           app.globalData.userInfo = user;
 
@@ -103,6 +112,7 @@ Page({
 
   createNewUser(db) {
     var defaultName = '微信用户';
+    var self = this;
     db.collection('users').add({
       data: {
         customName: defaultName,
@@ -114,9 +124,14 @@ Page({
       },
       success: function () {
         var user = { nickName: defaultName };
-        this.setData({ userInfo: user, loading: false });
+        self.setData({ userInfo: user, loading: false });
         app.globalData.userInfo = user;
-      }.bind(this)
+      },
+      fail: function (err) {
+        console.error('[History] createNewUser failed:', err);
+        self.setData({ loading: false });
+        wx.showToast({ title: '初始化失败，请重试', icon: 'none' });
+      }
     });
   },
 
@@ -275,6 +290,8 @@ getAiDiagnosis() {
   const angleDiff = latest.visionAngle - older.visionAngle;
   if (angleDiff > 10) {
     diagnosis += `📈 进步明显：您的关节活动度提升了 ${angleDiff}度。手臂伸展能力显著增强。\n\n`;
+  } else if (angleDiff < -10) {
+    diagnosis += `📉 活动度下降：关节活动范围减少了 ${Math.abs(angleDiff)}度。建议咨询医生，加强康复训练。\n\n`;
   } else {
     diagnosis += `⚖️ 状态稳定：目前的关节活动范围与初期基本持平，建议增加拉伸尝试。\n\n`;
   }
@@ -424,7 +441,94 @@ bindToDoctor: function () {
   });
 },
 
-// ================= 7. 患者：任务入口 =================
+// ================= 7. 身份切换 =================
+
+  /** 点击角色标签，弹出切换确认 */
+  switchRole: function () {
+    var currentRole = app.globalData.role || 'patient';
+    var target = currentRole === 'doctor' ? 'patient' : 'doctor';
+    this.setData({
+      showRoleSwitch: true,
+      switchTargetRole: target
+    });
+  },
+
+  /** 关闭切换弹窗 */
+  closeRoleSwitch: function () {
+    this.setData({ showRoleSwitch: false });
+  },
+
+  /** 确认切换身份 */
+  confirmRoleSwitch: function () {
+    var self = this;
+    var targetRole = this.data.switchTargetRole;
+    this.setData({ switchLoading: true });
+
+    // 先通过云函数同步角色
+    wx.cloud.callFunction({
+      name: 'setUserRole',
+      data: { role: targetRole },
+      success: function (res) {
+        self.setData({ switchLoading: false, showRoleSwitch: false });
+        var result = res.result || {};
+        var finalRole = result.role || targetRole;
+
+        // 更新全局状态和缓存
+        app.globalData.role = finalRole;
+        wx.setStorageSync('userRole', finalRole);
+
+        if (finalRole === 'doctor') {
+          app.globalData.inviteCode = result.inviteCode || null;
+          if (result.inviteCode) wx.setStorageSync('inviteCode', result.inviteCode);
+        }
+
+        // 刷新页面
+        roleManager.setupTabBar(finalRole);
+        self.setData({
+          role: finalRole,
+          isDoctor: finalRole === 'doctor',
+          isPatient: finalRole === 'patient'
+        });
+
+        if (finalRole === 'doctor') {
+          self.fetchDoctorStats();
+        } else {
+          self.fetchRecords();
+        }
+
+        wx.showToast({
+          title: '已切换为' + (finalRole === 'doctor' ? '医生/教练' : '患者/学员'),
+          icon: 'success',
+          duration: 2000
+        });
+      },
+      fail: function () {
+        self.setData({ switchLoading: false, showRoleSwitch: false });
+        // 离线降级：仅本地切换
+        var currentRole = app.globalData.role;
+        var target = currentRole === 'doctor' ? 'patient' : 'doctor';
+        app.globalData.role = target;
+        wx.setStorageSync('userRole', target);
+
+        roleManager.setupTabBar(target);
+        self.setData({
+          role: target,
+          isDoctor: target === 'doctor',
+          isPatient: target === 'patient'
+        });
+
+        if (target === 'doctor') {
+          self.fetchDoctorStats();
+        } else {
+          self.fetchRecords();
+        }
+
+        wx.showToast({ title: '已切换为' + (target === 'doctor' ? '医生/教练' : '患者/学员'), icon: 'success' });
+      }
+    });
+  },
+
+// ================= 8. 患者：任务入口 =================
 
 navigateToMyTasks: function () {
   if (roleManager.isPatient()) {

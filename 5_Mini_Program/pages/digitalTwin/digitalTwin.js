@@ -42,6 +42,7 @@ Page({
     activationLevel: '静息',
     modelLoading: false,
     modelReady: false,
+    glLoadError: '',       // 3D 加载错误信息，空字符串表示正常
     // EMG input source
     emgSource: 'rf',            // 'tcn' | 'rf' | 'measured'
     emgSourceLabel: 'RF',
@@ -50,6 +51,7 @@ Page({
     emg: 0,
 
     // Doctor: task management
+    doctorTab: 'twin',        // 'twin' | 'tasks'
     doctorTasks: [],
     taskLoading: false,
 
@@ -86,9 +88,7 @@ Page({
   },
 
   onReady: function () {
-    if (app.globalData.role === 'patient') {
-      this.initWebGL();
-    }
+    this._safeInitWebGL();
   },
 
   onShow: function () {
@@ -99,38 +99,41 @@ Page({
       isPatient: role === 'patient'
     });
 
-    if (role === 'patient') {
-      // Check for active training task
-      this._checkActiveTask();
+    // WebGL 和传感器订阅：医生和患者通用
+    if (!this._three.renderer && !this.data.glLoadError) {
+      this._safeInitWebGL();
+    }
 
-      this._unsub = dataManager.subscribe(function (data) {
-        var b = data.predictedBiceps != null ? data.predictedBiceps : (data.tcnBiceps || data.emg || 0);
-        var t = data.predictedTriceps != null ? data.predictedTriceps : (data.tcnTriceps || (data.emg || 0) * 0.3);
-        var br = data.predictedBrachioradialis != null ? data.predictedBrachioradialis : (data.tcnBrachioradialis || b * 0.7);
-        self.setData({
-          rdkStatus: data.rdkStatus,
-          rdkAngle: data.rdkAngle,
-          rightUpperAngle: data.rightUpperAngle || data.leftUpperAngle || 90,
-          rightValid: data.rightValid || data.leftValid,
-          predictedBiceps: Number(b).toFixed(1),
-          predictedTriceps: Number(t).toFixed(1),
-          predictedBrachioradialis: Number(br).toFixed(1),
-          bpm: data.bpm || '--',
-          emg: data.emg || 0
-        });
-        // Training rep detection + guidance
-        if (self.data.trainingActive) {
-          self._detectTwinRep(data.rdkAngle);
-          self._updateGuidance(data.rdkAngle);
-        }
+    this._unsub = dataManager.subscribe(function (data) {
+      var b = data.predictedBiceps != null ? data.predictedBiceps : (data.tcnBiceps || data.emg || 0);
+      var t = data.predictedTriceps != null ? data.predictedTriceps : (data.tcnTriceps || (data.emg || 0) * 0.3);
+      var br = data.predictedBrachioradialis != null ? data.predictedBrachioradialis : (data.tcnBrachioradialis || b * 0.7);
+      self.setData({
+        rdkStatus: data.rdkStatus,
+        rdkAngle: data.rdkAngle,
+        rightUpperAngle: data.rightUpperAngle || data.leftUpperAngle || 90,
+        rightValid: data.rightValid || data.leftValid,
+        predictedBiceps: Number(b).toFixed(1),
+        predictedTriceps: Number(t).toFixed(1),
+        predictedBrachioradialis: Number(br).toFixed(1),
+        bpm: data.bpm || '--',
+        emg: data.emg || 0
       });
+      if (self.data.trainingActive) {
+        self._detectTwinRep(data.rdkAngle);
+        self._updateGuidance(data.rdkAngle);
+      }
+    });
 
-      if (this._three.renderer && !this._three.animId) {
-        this.startAnimationLoop();
-      }
-      if (!rfInference.isLoaded() && !this.data.modelLoading) {
-        this.ensureModelLoaded();
-      }
+    if (this._three.renderer && !this._three.animId) {
+      this.startAnimationLoop();
+    }
+    if (!rfInference.isLoaded() && !this.data.modelLoading) {
+      this.ensureModelLoaded();
+    }
+
+    if (role === 'patient') {
+      this._checkActiveTask();
     } else if (role === 'doctor') {
       this.fetchDoctorTasks();
     }
@@ -154,6 +157,24 @@ Page({
   },
 
   // ============ WebGL Initialization ============
+
+  /** 安全初始化 WebGL：捕获 npm 未构建等错误，显示友好提示 */
+  _safeInitWebGL: function () {
+    var self = this;
+    try {
+      this.initWebGL();
+    } catch (e) {
+      console.error('[DigitalTwin] WebGL init failed:', e.message);
+      var msg = e.message || '';
+      if (msg.indexOf('threejs-miniprogram') !== -1 || msg.indexOf('is not defined') !== -1) {
+        self.setData({ glLoadError: 'threejs-miniprogram 未构建\n请在开发者工具中点击\n「工具 → 构建 npm」' });
+      } else if (msg.indexOf('pako') !== -1) {
+        self.setData({ glLoadError: 'pako 未构建\n请在开发者工具中点击\n「工具 → 构建 npm」' });
+      } else {
+        self.setData({ glLoadError: '3D 引擎启动失败\n' + msg.substring(0, 60) });
+      }
+    }
+  },
 
   initWebGL: function () {
     var self = this;
@@ -182,7 +203,7 @@ Page({
         self._loadArmGLB(function (armModel) {
           if (!armModel || !armModel.rootGroup) {
             console.error('[DigitalTwin] Arm model unavailable');
-            wx.showToast({ title: '3D模型加载失败', icon: 'none', duration: 3000 });
+            self.setData({ glLoadError: '3D 模型未能加载\n请确认 arm_model_clean.glb.gz\n已上传至云存储' });
             return;
           }
           scene.add(armModel.rootGroup);
@@ -202,8 +223,8 @@ Page({
           var modelSize = new THREE.Vector3();
           box.getSize(modelSize);
           box.getCenter(bCenter);
-          armModel.rootGroup.position.set(-bCenter.x, -bCenter.z, bCenter.y);
-          armModel.rootGroup.rotation.x = -Math.PI / 2;
+          // 居中模型（不做 Blender Z-up 转换，arm_model_clean 已是 Y-up）
+          armModel.rootGroup.position.set(-bCenter.x, -bCenter.y, -bCenter.z);
           armModel.rootGroup.updateMatrixWorld(true);
           armModel.rootGroup.traverse(function (obj) {
             if (obj.isSkinnedMesh && obj.skeleton) {
@@ -216,7 +237,7 @@ Page({
           var maxDim = Math.max(modelSize.x, modelSize.y, modelSize.z, 1);
           var camDist = maxDim * 1.5;
           self._three.cameraDist = camDist;
-          if (!isFinite(camDist) || camDist <= 0) camDist = 20;
+          if (!Number.isFinite(camDist) || camDist <= 0) camDist = 20;
           var camera = new THREE.PerspectiveCamera(45, width / Math.max(height, 1), 0.1, Math.max(camDist * 5, 50));
           camera.position.set(camDist * 0.3, camDist * 0.35, camDist * 0.7);
           camera.lookAt(orbitTarget);
@@ -233,7 +254,7 @@ Page({
   _loadArmGLB: function (callback) {
     var self = this;
     var fs = wx.getFileSystemManager();
-    var cachePath = wx.env.USER_DATA_PATH + '/arm_model.glb';
+    var cachePath = wx.env.USER_DATA_PATH + '/arm_model_clean.glb';
     try {
       var cached = fs.readFileSync(cachePath);
       console.log('[DigitalTwin] Arm GLB cache hit: ' + cached.byteLength + ' bytes');
@@ -253,7 +274,7 @@ Page({
 
   _downloadArmGLB: function (fs, cachePath, callback) {
     var self = this;
-    var fileID = 'cloud://your-cloud-env-id.your-cloud-bucket/arm_model.glb.gz';
+    var fileID = 'cloud://cloud1-d7g8tpqsscb7f752a.636c-cloud1-d7g8tpqsscb7f752a-1435955022/arm_model_clean.glb.gz';
 
     console.log('[DigitalTwin] Getting temp URL for arm GLB...');
     wx.cloud.getTempFileURL({
@@ -262,7 +283,7 @@ Page({
         var url = urlRes.fileList && urlRes.fileList[0] && urlRes.fileList[0].tempFileURL;
         if (!url) {
           // Try direct hosting URL
-          self._downloadViaWx('https://your-cloud-domain.example.com/arm_model.glb.gz', fs, cachePath, callback);
+          self._downloadViaWx('https://636c-cloud1-d7g8tpqsscb7f752a-1435955022.tcb.qcloud.la/arm_model_clean.glb.gz', fs, cachePath, callback);
           return;
         }
         // Use wx.downloadFile — most reliable cross-platform
@@ -282,13 +303,13 @@ Page({
           },
           fail: function (err) {
             console.error('[DigitalTwin] wx.downloadFile failed:', JSON.stringify(err));
-            self._downloadViaWx('https://your-cloud-domain.example.com/arm_model.glb.gz', fs, cachePath, callback);
+            self._downloadViaWx('https://636c-cloud1-d7g8tpqsscb7f752a-1435955022.tcb.qcloud.la/arm_model_clean.glb.gz', fs, cachePath, callback);
           }
         });
       },
       fail: function (err) {
         console.error('[DigitalTwin] getTempFileURL failed:', JSON.stringify(err));
-        self._downloadViaWx('https://your-cloud-domain.example.com/arm_model.glb.gz', fs, cachePath, callback);
+        self._downloadViaWx('https://636c-cloud1-d7g8tpqsscb7f752a-1435955022.tcb.qcloud.la/arm_model_clean.glb.gz', fs, cachePath, callback);
       }
     });
   },
@@ -348,23 +369,35 @@ Page({
     if (this._three.animId) return;
     var self = this;
     var state = this._three;
+    var errCount = 0;
     function render() {
       if (!state.renderer || !state.scene || !state.camera) return;
-      var now = Date.now();
-      var dt = Math.min((now - state.lastTime) / 1000, 0.1);
-      state.lastTime = now;
-      if (state.controls) state.controls.update();
-      self.updateArmPose(dt);
-      self.updateInference();
-      state.renderer.render(state.scene, state.camera);
-      var canvas = state.renderer.domElement;
-      if (canvas && canvas.requestAnimationFrame) {
-        state.animId = canvas.requestAnimationFrame(render);
+      try {
+        var now = Date.now();
+        var dt = Math.min((now - state.lastTime) / 1000, 0.1);
+        state.lastTime = now;
+        if (state.controls) state.controls.update();
+        self.updateArmPose(dt);
+        self.updateInference();
+        state.renderer.render(state.scene, state.camera);
+        errCount = 0; // 连续成功则重置
+      } catch (e) {
+        errCount++;
+        console.error('[DigitalTwin] Render loop error (' + errCount + '):', e.message);
+        // 连续 10 帧失败则停止，避免死循环；偶发错误则继续
+        if (errCount >= 10) {
+          console.error('[DigitalTwin] Render loop stopped after 10 consecutive errors');
+          state.animId = 0;
+          return;
+        }
+      }
+      // 始终调度下一帧，确保单次错误不会杀死循环
+      if (typeof wx !== 'undefined' && wx.requestAnimationFrame) {
+        state.animId = wx.requestAnimationFrame(render);
+      } else if (typeof requestAnimationFrame !== 'undefined') {
+        state.animId = requestAnimationFrame(render);
       } else {
-        var raf = (typeof requestAnimationFrame !== 'undefined') ? requestAnimationFrame :
-          (typeof wx !== 'undefined' && wx.requestAnimationFrame) ? wx.requestAnimationFrame : null;
-        if (raf) { state.animId = raf(render); }
-        else { state.animId = setTimeout(render, 16); }
+        state.animId = setTimeout(render, 16);
       }
     }
     render();
@@ -373,8 +406,14 @@ Page({
   stopAnimationLoop: function () {
     var state = this._three;
     if (state.animId) {
-      var canvas = state.renderer && state.renderer.domElement;
-      if (canvas && canvas.cancelAnimationFrame) canvas.cancelAnimationFrame(state.animId);
+      // 使用与本项目 startAnimationLoop 一致的取消方式
+      if (typeof wx !== 'undefined' && wx.cancelAnimationFrame) {
+        wx.cancelAnimationFrame(state.animId);
+      } else if (typeof cancelAnimationFrame !== 'undefined') {
+        cancelAnimationFrame(state.animId);
+      } else {
+        clearTimeout(state.animId);
+      }
       state.animId = 0;
     }
   },
@@ -509,8 +548,8 @@ Page({
 
   _downloadModel: function (fs, cachePath) {
     var self = this;
-    var fileID = 'cloud://your-cloud-env-id.your-cloud-bucket/model.bin.gz';
-    var hostingUrl = 'https://your-cloud-domain.example.com/model.bin.gz';
+    var fileID = 'cloud://cloud1-d7g8tpqsscb7f752a.636c-cloud1-d7g8tpqsscb7f752a-1435955022/model.bin.gz';
+    var hostingUrl = 'https://636c-cloud1-d7g8tpqsscb7f752a-1435955022.tcb.qcloud.la/model.bin.gz';
 
     console.log('[DigitalTwin] Getting temp URL for AI model...');
     wx.cloud.getTempFileURL({
@@ -560,7 +599,7 @@ Page({
 
   _downloadTryHosting: function (fs, cachePath) {
     var self = this;
-    var hostingUrl = 'https://your-cloud-domain.example.com/model.bin.gz';
+    var hostingUrl = 'https://636c-cloud1-d7g8tpqsscb7f752a-1435955022.tcb.qcloud.la/model.bin.gz';
     wx.request({
       url: hostingUrl,
       responseType: 'arraybuffer',
@@ -893,6 +932,12 @@ Page({
   },
 
   // ============ Doctor: Task Management ============
+
+  /** 医生端切换子 Tab */
+  switchDoctorTab: function (e) {
+    var tab = e.currentTarget.dataset.tab;
+    this.setData({ doctorTab: tab });
+  },
 
   fetchDoctorTasks: function () {
     var self = this;

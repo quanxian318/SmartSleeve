@@ -20,10 +20,10 @@ var THREE;
 
 function ensureThree() {
   if (!THREE) {
-    try {
-      THREE = require('./threeAdapter').THREE || require('three');
-    } catch (e) {
-      THREE = require('three');
+    var ta = require('./threeAdapter');
+    THREE = ta.THREE;
+    if (!THREE) {
+      throw new Error('[muscleMaterials] THREE not initialized — call threeAdapter.initThree() first');
     }
   }
   return THREE;

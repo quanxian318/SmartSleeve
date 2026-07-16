@@ -54,19 +54,23 @@ exports.main = async (event, context) => {
 
     user = userRes.data[0];
 
-    // If role is already set, return success with existing data (idempotent)
-    if (user.role) {
-      console.log('[setUserRole] Role already set:', user.role);
+    // 允许切换角色：如果云端已有角色且与请求不同，执行更新
+    if (user.role && user.role === role) {
+      console.log('[setUserRole] Role unchanged:', user.role);
       return {
         success: true,
         role: user.role,
         inviteCode: user.inviteCode || null,
-        message: '角色已设置'
+        message: '角色未改变'
       };
     }
 
+    if (user.role && user.role !== role) {
+      console.log('[setUserRole] Switching role from', user.role, 'to', role);
+    }
+
     if (role === 'doctor') {
-      const code = await generateUniqueCode(db);
+      const code = user.inviteCode || await generateUniqueCode(db);
 
       await db.collection('users').where({ _openid: openid }).update({
         data: {

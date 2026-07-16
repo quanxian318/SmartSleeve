@@ -27,3 +27,5 @@ yarn-error.log*
 Thumbs.db
 .idea/
 .vscode/
+# WeChat mini program build output
+5_Mini_Program/miniprogram_npm/

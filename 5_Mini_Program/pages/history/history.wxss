@@ -72,6 +72,15 @@
   font-size: 12px;
   font-weight: 600;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.role-badge:active {
+  transform: scale(0.95);
+  opacity: 0.85;
 }
 
 .badge-doctor {
@@ -82,6 +91,12 @@
 .badge-patient {
   background: #e8f5e9;
   color: #2ecc71;
+}
+
+.role-switch-icon {
+  font-size: 14px;
+  opacity: 0.6;
+  font-weight: 400;
 }
 
 /* ==================== 3. Profile Card ==================== */
@@ -707,5 +722,55 @@
   color: #fff !important;
   font-weight: 700;
   font-size: 15px;
+  border: none !important;
+}
+
+/* ==================== 11. Role Switch Modal ==================== */
+.switch-desc {
+  font-size: 16px;
+  color: #2c3e50;
+  line-height: 1.6;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.switch-highlight {
+  color: #0984e3;
+  font-weight: 700;
+}
+
+.switch-hint {
+  font-size: 12px;
+  color: #95a5a6;
+  margin-top: 4px;
+}
+
+.switch-modal-btns {
+  display: flex;
+  gap: 12px;
+  padding: 16px 20px 20px;
+}
+
+.switch-cancel-btn {
+  flex: 1;
+  height: 44px;
+  line-height: 44px;
+  border-radius: 22px;
+  font-size: 15px;
+  font-weight: 600;
+  background: #f1f2f6;
+  color: #636e72;
+  border: none;
+}
+
+.switch-confirm-btn {
+  flex: 1.5;
+  height: 44px;
+  line-height: 44px;
+  border-radius: 22px;
+  font-size: 15px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #0984e3, #00a8ff) !important;
+  color: #fff !important;
   border: none !important;
 }

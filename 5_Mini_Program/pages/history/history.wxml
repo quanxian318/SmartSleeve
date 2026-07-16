@@ -16,9 +16,10 @@
         </view>
       </block>
     </view>
-    <!-- 角色标签 -->
-    <view class="role-badge {{isDoctor ? 'badge-doctor' : 'badge-patient'}}">
+    <!-- 角色标签（可点击切换） -->
+    <view class="role-badge {{isDoctor ? 'badge-doctor' : 'badge-patient'}}" bindtap="switchRole">
       {{isDoctor ? '医生/教练' : '患者/学员'}}
+      <text class="role-switch-icon">⇄</text>
     </view>
   </view>
 
@@ -219,5 +220,24 @@
       <text class="ai-result-text">{{aiResultText}}</text>
     </scroll-view>
     <button class="ai-modal-btn" bindtap="closeAiModal">收到建议</button>
+  </view>
+</view>
+
+<!-- 身份切换确认弹窗 -->
+<view class="ai-modal-mask" wx:if="{{showRoleSwitch}}" bindtap="closeRoleSwitch">
+  <view class="ai-modal-content" catchtap="stop">
+    <view class="ai-modal-header">🔄 切换身份</view>
+    <view class="ai-modal-body" style="text-align:center;">
+      <text class="switch-desc">
+        确定要切换为<text class="switch-highlight">{{switchTargetRole === 'doctor' ? '医生/教练' : '患者/学员'}}</text>吗？
+      </text>
+      <view class="switch-hint">切换后界面布局和功能将相应调整</view>
+    </view>
+    <view class="switch-modal-btns">
+      <button class="switch-cancel-btn" bindtap="closeRoleSwitch">取消</button>
+      <button class="switch-confirm-btn" bindtap="confirmRoleSwitch" loading="{{switchLoading}}">
+        {{switchTargetRole === 'doctor' ? '切换为医生' : '切换为患者'}}
+      </button>
+    </view>
   </view>
 </view>

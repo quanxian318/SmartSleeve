@@ -1,39 +1,38 @@
-<!-- ==================== 医生：任务管理 ==================== -->
-<view wx:if="{{isDoctor}}" class="doctor-task-page">
-  <view class="dt-header">
-    <text class="dt-title">任务管理中心</text>
-    <view class="dt-header-actions">
-      <button class="dt-record-btn" size="mini" bindtap="goRecordAction">🎬 录制标准动作</button>
-      <text class="dt-count">共 {{doctorTasks.length}} 个任务</text>
-    </view>
-  </view>
-  <scroll-view scroll-y class="dt-task-list" wx:if="{{doctorTasks.length > 0}}">
-    <view wx:for="{{doctorTasks}}" wx:key="_id" class="dt-task-card" bindtap="openDoctorTask" data-taskid="{{item._id}}">
-      <view class="dt-task-top">
-        <text class="dt-task-patient">👤 {{item.patientName || '患者'}}</text>
-        <view class="dt-task-status {{item.status}}">
-          <text wx:if="{{item.status === 'pending'}}">待完成</text>
-          <text wx:elif="{{item.status === 'completed'}}">已完成</text>
-          <text wx:else>{{item.status}}</text>
-        </view>
-      </view>
-      <text class="dt-task-title">{{item.title}}</text>
-      <view class="dt-task-bottom">
-        <text class="dt-task-angle">{{item.targetAngleMin}}° — {{item.targetAngleMax}}°</text>
-        <text class="dt-task-reps">{{item.repetitions}} 次</text>
-        <text wx:if="{{item.deadline}}" class="dt-task-deadline">截止: {{item.deadline}}</text>
-      </view>
-    </view>
-  </scroll-view>
-  <view wx:else class="dt-empty">
-    <text class="dt-empty-icon">📋</text>
-    <text class="dt-empty-text">暂无任务</text>
-    <text class="dt-empty-hint">切换到"患者管理"Tab发布新任务</text>
-  </view>
-</view>
+<!-- ==================== 医生：子 Tab 切换 ==================== -->
+<cover-view wx:if="{{isDoctor}}" class="doctor-tab-bar">
+  <cover-view class="doctor-tab {{doctorTab === 'twin' ? 'active' : ''}}" bindtap="switchDoctorTab" data-tab="twin">
+    数字孪生
+  </cover-view>
+  <cover-view class="doctor-tab {{doctorTab === 'tasks' ? 'active' : ''}}" bindtap="switchDoctorTab" data-tab="tasks">
+    任务管理
+  </cover-view>
+</cover-view>
 
-<!-- ==================== 患者：3D 数字孪生 ==================== -->
-<canvas wx:if="{{isPatient}}"
+<!-- ==================== 医生：任务管理（全屏） ==================== -->
+<cover-view wx:if="{{isDoctor && doctorTab === 'tasks'}}" class="doctor-task-full">
+  <cover-view class="dtf-header">
+    <cover-view class="dtf-title">任务管理</cover-view>
+    <cover-view class="dtf-record-btn" bindtap="goRecordAction">🎬 录制动作</cover-view>
+  </cover-view>
+  <cover-view class="dtf-scroll">
+    <cover-view wx:if="{{doctorTasks.length > 0}}">
+      <cover-view wx:for="{{doctorTasks}}" wx:key="_id" class="dtf-card" bindtap="openDoctorTask" data-taskid="{{item._id}}">
+        <cover-view class="dtf-card-top">
+          <cover-view class="dtf-card-patient">👤 {{item.patientName || '患者'}}</cover-view>
+          <cover-view class="dtf-card-status {{item.status}}">
+            {{item.status === 'pending' ? '待完成' : (item.status === 'completed' ? '已完成' : item.status)}}
+          </cover-view>
+        </cover-view>
+        <cover-view class="dtf-card-title">{{item.title}}</cover-view>
+        <cover-view class="dtf-card-meta">{{item.targetAngleMin}}°–{{item.targetAngleMax}}° · {{item.repetitions}}次</cover-view>
+      </cover-view>
+    </cover-view>
+    <cover-view wx:else class="dtf-empty">暂无任务 · 去患者管理Tab发布</cover-view>
+  </cover-view>
+</cover-view>
+
+<!-- ==================== 3D 数字孪生（医生和患者通用） ==================== -->
+<canvas
   type="webgl"
   id="glCanvas"
   class="gl-canvas"
@@ -41,6 +40,11 @@
   bindtouchmove="onTouchMove"
   bindtouchend="onTouchEnd"
 >
+  <!-- 3D 加载失败 / npm 未构建 提示 -->
+  <cover-view wx:if="{{glLoadError}}" class="gl-error-overlay">
+    <cover-view class="gl-error-icon">⚠️</cover-view>
+    <cover-view class="gl-error-text">{{glLoadError}}</cover-view>
+  </cover-view>
   <cover-view class="status-overlay">
     <cover-view class="connection-badge {{rdkStatus === '演示模式' ? 'demo' : (rdkStatus === '已连接' ? 'online' : 'offline')}}">
       <cover-view class="badge-dot"></cover-view>

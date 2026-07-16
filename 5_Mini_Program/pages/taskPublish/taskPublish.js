@@ -167,6 +167,10 @@ Page({
     if (this.data.pickedTemplate && !task.templateId) {
       task.templateId = this.data.pickedTemplate._id;
     }
+    // 补充云函数负责添加的 doctorId，避免生成孤儿数据
+    if (!task.doctorId) {
+      task.doctorId = app.globalData.userInfo ? app.globalData.userInfo._openid : (wx.getStorageSync('userOpenid') || '');
+    }
     var self = this;
     wx.cloud.database().collection('tasks').add({ data: task }).then(function () {
       self.setData({ sending: false });

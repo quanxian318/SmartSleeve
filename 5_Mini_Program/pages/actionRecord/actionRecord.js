@@ -154,7 +154,9 @@ Page({
       standardAngleCurve: this.data.angleCurve,
       standardEmgCurve: this.data.emgCurve,
       repetitions: 10,
-      createdAt: new Date()
+      createdAt: new Date(),
+      // 补充 doctorId，防止降级写入生成孤儿数据
+      doctorId: app.globalData.userInfo ? app.globalData.userInfo._openid : (wx.getStorageSync('userOpenid') || '')
     };
 
     wx.cloud.callFunction({

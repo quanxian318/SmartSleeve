@@ -31,9 +31,14 @@ Page({
       data: { role: role },
       success: function (res) {
         that.setData({ loading: false });
-        if (role === 'doctor' && res.result && res.result.inviteCode) {
-          app.globalData.inviteCode = res.result.inviteCode;
-          wx.setStorageSync('inviteCode', res.result.inviteCode);
+        var result = res.result || {};
+        // 云端可能已有角色（幂等返回），以云端为准，避免本地与云端永久不一致
+        var finalRole = result.role || role;
+        app.globalData.role = finalRole;
+        wx.setStorageSync('userRole', finalRole);
+        if (finalRole === 'doctor' && result.inviteCode) {
+          app.globalData.inviteCode = result.inviteCode;
+          wx.setStorageSync('inviteCode', result.inviteCode);
         }
         that._goHome();
       },

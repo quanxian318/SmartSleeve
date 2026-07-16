@@ -199,6 +199,7 @@ const dataManager = {
           console.error('[DataMgr] WS connection timed out after 10s');
           self.updateSensorData({ rdkStatus: '连接超时(请检查WiFi和IP)' });
           try { task.close({}); } catch (e) {}
+          reject(new Error('WebSocket连接超时'));
         }
       }, 10000);
 
@@ -252,6 +253,7 @@ const dataManager = {
         clearTimeout(timeout);
         console.error('[DataMgr] WS error:', JSON.stringify(err));
         self.updateSensorData({ rdkStatus: '连接出错: ' + (err.errMsg || '') });
+        reject(err);
       });
 
       task.onClose(function () {

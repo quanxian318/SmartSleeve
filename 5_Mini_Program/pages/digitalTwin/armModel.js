@@ -107,6 +107,21 @@ function setupModel(THREE, gltf) {
 
   console.log('[armModel] Reparenting complete');
 
+  // --- Diagnostic: print ALL mesh names for debugging ---
+  var allMeshNames = [];
+  armRoot.traverse(function (obj) {
+    if (obj.isMesh && obj.name) {
+      allMeshNames.push(obj.name);
+    }
+  });
+  console.log('[armModel] ALL mesh names (' + allMeshNames.length + '):', allMeshNames.join(', '));
+  // Also print Group/Object3D names (potential muscle parent groups)
+  var allGroupNames = [];
+  armRoot.traverse(function (obj) {
+    if (obj.name) allGroupNames.push(obj.type + ':' + obj.name);
+  });
+  console.log('[armModel] ALL node names (' + allGroupNames.length + '):', allGroupNames.join(', '));
+
   // --- Scale up ---
   armRoot.scale.set(8, 8, 8);
 
@@ -169,12 +184,57 @@ function setupModel(THREE, gltf) {
   setupMuscleMesh(deltoidNode, 'deltoid');
   setupMuscleMesh(brachioradNode, 'brachioradialis');
 
-  // Fallback for partial meshes
+  // Fallback: search by partial name match (GLB often uses Latin anatomical names)
+  var MUSCLE_NAME_PATTERNS = {
+    biceps: ['biceps', 'Biceps', 'BICEPS', '二头'],
+    triceps: ['triceps', 'Triceps', 'TRICEPS', '三头'],
+    deltoid: ['deltoid', 'Deltoid', 'DELTOID', '三角'],
+    brachioradialis: ['brachioradialis', 'Brachioradialis', 'BRACHIORADIALIS', '肱桡', 'brachiorad']
+  };
+
+  Object.keys(MUSCLE_NAME_PATTERNS).forEach(function (key) {
+    if (muscles[key]) return; // already found
+    var patterns = MUSCLE_NAME_PATTERNS[key];
+    var found = null;
+    armRoot.traverse(function (obj) {
+      if (found) return;
+      if (!obj.isMesh) return;
+      var name = obj.name || '';
+      for (var p = 0; p < patterns.length; p++) {
+        if (name.indexOf(patterns[p]) !== -1) {
+          found = obj;
+          return;
+        }
+      }
+    });
+    if (found) {
+      // Walk up to the parent group node for consistent setupMuscleMesh behavior
+      var parent = found.parent;
+      while (parent && parent !== armRoot && !parent.name) {
+        parent = parent.parent;
+      }
+      var target = (parent && parent !== armRoot && parent.name) ? parent : found;
+      target.userData = target.userData || {};
+      target.userData.muscle = key;
+      setupMuscleMesh(target, key);
+      console.log('[armModel] Fallback found ' + key + ': ' + found.name);
+    }
+  });
+
+  // Final fallback: if still not found, try common anatomical node names
+  var ANATOMICAL_BICEPS_NAMES = [
+    'Long head of biceps brachii.r', 'Short head of biceps brachii.r',
+    'Biceps brachii.r', 'Biceps brachii', 'biceps brachii'
+  ];
   if (!muscles.biceps) {
-    var longHead = armRoot.getObjectByName('Long head of biceps brachii.r');
-    if (longHead) {
-      longHead.userData = { muscle: 'biceps', displayName: '肱二头肌', enName: 'Biceps Brachii' };
-      muscles.biceps = longHead;
+    for (var bi = 0; bi < ANATOMICAL_BICEPS_NAMES.length; bi++) {
+      var node = armRoot.getObjectByName(ANATOMICAL_BICEPS_NAMES[bi]);
+      if (node) {
+        node.userData = { muscle: 'biceps', displayName: '肱二头肌', enName: 'Biceps Brachii' };
+        setupMuscleMesh(node, 'biceps');
+        console.log('[armModel] Anatomical biceps fallback: ' + ANATOMICAL_BICEPS_NAMES[bi]);
+        break;
+      }
     }
   }
 

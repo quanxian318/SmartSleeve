@@ -65,8 +65,10 @@ Page({
       this._unsub = dataManager.subscribe(function (data) {
       that.setData({
         rdkAngle: data.rdkAngle, rdkStatus: data.rdkStatus,
-        leftElbowAngle: data.leftElbowAngle.toFixed(2), rightElbowAngle: data.rightElbowAngle.toFixed(2),
-        leftUpperAngle: data.leftUpperAngle.toFixed(2), rightUpperAngle: data.rightUpperAngle.toFixed(2),
+        leftElbowAngle: Number(data.leftElbowAngle || 0).toFixed(2),
+        rightElbowAngle: Number(data.rightElbowAngle || 0).toFixed(2),
+        leftUpperAngle: Number(data.leftUpperAngle || 0).toFixed(2),
+        rightUpperAngle: Number(data.rightUpperAngle || 0).toFixed(2),
         leftValid: data.leftValid, rightValid: data.rightValid, lastSkeleton: data.lastSkeleton
       });
       that._recordDataPoint(data);
@@ -464,7 +466,15 @@ Page({
   connectNanoDevice(deviceId, services) {
     var s = services.find(function (s) { return s.uuid.includes('FFE0'); }) || services[0]; if (!s) return;
     var that = this;
-    wx.getBLEDeviceCharacteristics({ deviceId: deviceId, serviceId: s.uuid, success: function (res) { var c = res.characteristics.find(function (c) { return c.uuid.includes('FFE1'); }) || res.characteristics[0]; if (!c) return; wx.notifyBLECharacteristicValueChange({ state: true, deviceId: deviceId, serviceId: s.uuid, characteristicId: c.uuid, success: function () { wx.onBLECharacteristicValueChange(function (res) { that.data.buffer += String.fromCharCode.apply(null, new Uint8Array(res.value)); var lines = that.data.buffer.split('\n'); if (lines.length > 1) { var vals = lines[lines.length - 2].split(','); if (vals.length >= 4) that.processSensorData(vals[0], vals[1], vals[2], vals[3]); that.data.buffer = lines[lines.length - 1]; } }); } }); } });
+    wx.getBLEDeviceCharacteristics({ deviceId: deviceId, serviceId: s.uuid, success: function (res) { var c = res.characteristics.find(function (c) { return c.uuid.includes('FFE1'); }) || res.characteristics[0]; if (!c) return; wx.notifyBLECharacteristicValueChange({ state: true, deviceId: deviceId, serviceId: s.uuid, characteristicId: c.uuid, success: function () { wx.onBLECharacteristicValueChange(function (res) {
+                    var raw = new Uint8Array(res.value);
+                    // 分段拼接避免 String.fromCharCode.apply 参数过多崩溃
+                    for (var bi = 0; bi < raw.length; bi++) { that.data.buffer += String.fromCharCode(raw[bi]); }
+                    // 限制最大 8KB，防止无换行符时 OOM
+                    if (that.data.buffer.length > 8192) { that.data.buffer = that.data.buffer.slice(-4096); }
+                    var lines = that.data.buffer.split('\n');
+                    if (lines.length > 1) { var vals = lines[lines.length - 2].split(','); if (vals.length >= 4) that.processSensorData(vals[0], vals[1], vals[2], vals[3]); that.data.buffer = lines[lines.length - 1]; }
+                  }); } }); } });
   },
 
   startMockData() {

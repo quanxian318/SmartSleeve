@@ -41,8 +41,9 @@
       }
     ]
   },
+  "requiredPrivateInfos": ["chooseLocation", "getLocation"],
   "permission": {
-    "bluetooth": {
+    "scope.bluetooth": {
       "desc": "需要连接心电测量仪获取心率数据"
     }
   },
